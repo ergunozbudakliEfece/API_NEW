@@ -1,0 +1,314 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Data;
+using System.Data.SqlClient;
+
+namespace SQL_API.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AuthController : ControllerBase
+    {
+        private readonly IConfiguration _configuration;
+        public AuthController(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+        [HttpGet]
+        public async Task<string> Get()
+        {
+            DataTable table = new DataTable();
+
+
+            string query = @"EXEC SP_AUTHTABLE";
+
+            string sqldataSource = _configuration.GetConnectionString("Con")!;
+            SqlDataReader sqlreader;
+            await using(SqlConnection mycon = new SqlConnection(sqldataSource))
+            {
+                mycon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                {
+                    sqlreader = await myCommand.ExecuteReaderAsync();
+                    table.Load(sqlreader);
+                    sqlreader.Close();
+                    mycon.Close();
+                }
+            }
+            
+            return JsonConvert.SerializeObject(table);
+        }
+        
+        [HttpGet("ozelyetkiler")]
+        public async Task<string> GetOzelYetki()
+        {
+            DataTable table = new DataTable();
+            string query = @"EXEC SP_PRIVATEAUTHTABLE";
+            string sqldataSource = _configuration.GetConnectionString("Con")!;
+            SqlDataReader sqlreader;
+            await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+            {
+                mycon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                {
+                    sqlreader = await myCommand.ExecuteReaderAsync();
+                    table.Load(sqlreader);
+                    sqlreader.Close();
+                    mycon.Close();
+                }
+            }
+            return JsonConvert.SerializeObject(table);
+        }
+        [HttpGet("ozel/detay")]
+        public async Task<string> GetOZEL()
+        {
+            DataTable table = new DataTable();
+
+
+            string query = @"SELECT * FROM TBL_PRIVATEAUTHDETAILS";
+
+            string sqldataSource = _configuration.GetConnectionString("Con")!;
+            SqlDataReader sqlreader;
+            await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+            {
+                mycon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                {
+                    sqlreader = await myCommand.ExecuteReaderAsync();
+                    table.Load(sqlreader);
+                    sqlreader.Close();
+                    mycon.Close();
+                }
+            }
+            return JsonConvert.SerializeObject(table);
+        }
+        [HttpGet("ozelyetki")]
+        public async Task<string> GetOZELYETKILER()
+        {
+            DataTable table = new DataTable();
+
+
+            string query = @"EXEC SP_PRIVATEAUTHTABLE";
+
+            string sqldataSource = _configuration.GetConnectionString("Con")!;
+            SqlDataReader sqlreader;
+            await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+            {
+                mycon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                {
+                    sqlreader = await myCommand.ExecuteReaderAsync();
+                    table.Load(sqlreader);
+                    sqlreader.Close();
+                    mycon.Close();
+                }
+            }
+            return JsonConvert.SerializeObject(table);
+        }
+        [HttpGet("Kontrol/{userid}/{moduleid}")]
+        public async Task<string> GetKontrol(int userid, int moduleid)
+        {
+            DataTable table = new DataTable();
+
+
+            string query = @"EXEC SP_AUTHCONTROL " + userid + "," + moduleid;
+
+            string sqldataSource = _configuration.GetConnectionString("Con")!;
+            SqlDataReader sqlreader;
+            await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+            {
+                mycon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                {
+                    sqlreader = await myCommand.ExecuteReaderAsync();
+                    table.Load(sqlreader);
+                    sqlreader.Close();
+                    mycon.Close();
+                }
+            }
+            return JsonConvert.SerializeObject(table);
+        }
+        [HttpGet("Ekle/{userid}/{moduleid}")]
+        public string GetEkle(int userid, int moduleid)
+        {
+            try
+            {
+
+
+                string query = @"INSERT INTO TBL_AUTH  VALUES(" + userid + "," + moduleid + ")";
+
+                string sqldataSource = _configuration.GetConnectionString("Con")!;
+                SqlDataReader sqlreader;
+                using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = myCommand.ExecuteReader();
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+
+            }
+            catch (System.Exception e)
+            {
+                var m = e.Message;
+                return "BAŞARISIZ";
+            }
+            return "BAŞARILI";
+        }
+        [HttpGet("copyrole/{userid}/{id}")]
+        public string GetCopy(int userid, int id)
+        {
+            try
+            {
+
+
+                string query = @"SP_COPYAUTHROLE " + userid + "," + id;
+
+                string sqldataSource = _configuration.GetConnectionString("Con")!;
+                SqlDataReader sqlreader;
+                using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = myCommand.ExecuteReader();
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+
+            }
+            catch (System.Exception e)
+            {
+                var m = e.Message;
+                return "BAŞARISIZ";
+            }
+            return "BAŞARILI";
+        }
+        [HttpGet("copyuser/{userid1}/{userid2}")]
+        public string GetCopyUser(int userid1, int userid2)
+        {
+            try
+            {
+
+
+                string query = @"SP_COPYAUTHUSER " + userid1 + "," + userid2;
+
+                string sqldataSource = _configuration.GetConnectionString("Con")!;
+                SqlDataReader sqlreader;
+                using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = myCommand.ExecuteReader();
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+
+            }
+            catch (System.Exception e)
+            {
+                var m = e.Message;
+                return "BAŞARISIZ";
+            }
+            return "BAŞARILI";
+        }
+        [HttpGet("Sil/{userid}/{moduleid}")]
+        public string GetSil(int userid, int moduleid)
+        {
+            try
+            {
+
+
+                string query = @"DELETE FROM TBL_AUTH WHERE USER_ID= " + userid + " AND MODULE_ID=" + moduleid;
+
+                string sqldataSource = _configuration.GetConnectionString("Con")!;
+                SqlDataReader sqlreader;
+                using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = myCommand.ExecuteReader();
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+
+            }
+            catch (System.Exception)
+            {
+
+                return "BAŞARISIZ";
+            }
+            return "BAŞARILI";
+        }
+        [HttpGet("ozel/Ekle/{userid}/{moduleid}")]
+        public string GetOZELEkle(int userid, int moduleid)
+        {
+            try
+            {
+
+
+                string query = @"INSERT INTO TBL_PRIVATEAUTH  VALUES(" + userid + "," + moduleid + ")";
+
+                string sqldataSource = _configuration.GetConnectionString("Con")!;
+                SqlDataReader sqlreader;
+                using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = myCommand.ExecuteReader();
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+
+            }
+            catch (System.Exception e)
+            {
+                var m = e.Message;
+                return "BAŞARISIZ";
+            }
+            return "BAŞARILI";
+        }
+
+        [HttpGet("ozel/Sil/{userid}/{moduleid}")]
+        public string GetOZELSil(int userid, int moduleid)
+        {
+            try
+            {
+
+
+                string query = @"DELETE FROM TBL_PRIVATEAUTH WHERE USER_ID= " + userid + " AND MODULE_ID=" + moduleid;
+
+                string sqldataSource = _configuration.GetConnectionString("Connn")!;
+                SqlDataReader sqlreader;
+                using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = myCommand.ExecuteReader();
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+
+            }
+            catch (System.Exception)
+            {
+
+                return "BAŞARISIZ";
+            }
+            return "BAŞARILI";
+        }
+    }
+}
