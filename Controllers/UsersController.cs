@@ -4,6 +4,12 @@ using Microsoft.Extensions.Configuration;
 using System.Data.SqlClient;
 using System.Data;
 using Newtonsoft.Json;
+using SQL_API.Wrappers.Abstract;
+using SQL_API.Models;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
+using SQL_API.Wrappers.Concrete;
+using SQL_API.Context;
 
 namespace SQL_API.Controllers
 {
@@ -12,9 +18,12 @@ namespace SQL_API.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IConfiguration _configuration;
-        public UsersController( IConfiguration configuration)
+        private readonly ApplicationDbContext _Context;
+
+        public UsersController( IConfiguration configuration, ApplicationDbContext Context)
         {
             _configuration = configuration;
+            _Context = Context;
         }
         [HttpGet("usernames")]
         public string GetAUserByNames()
@@ -63,6 +72,28 @@ namespace SQL_API.Controllers
             }
 
             return JsonConvert.SerializeObject(table);
+        }
+
+        [HttpPost("/ChangePassword")]
+        public async Task<IResponse> PasswordUpdate(PasswordUpdateRequest Request)
+        {
+            try
+            {
+                User Result = await _Context.USERS.Where(x => x.USER_ID == Request.USER_ID && x.ACTIVE == true).FirstOrDefaultAsync();
+
+                if (Result is null)
+                    return new ErrorResponse("Kullanıcı bulunamadı.");
+
+                Result.USER_PASSWORD = Request.USER_PASSWORD;
+
+                await _Context.SaveChangesAsync();
+
+                return new SuccessResponse<string>("Başarılı.", "Şifre başarılı şekilde değiştirildi.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
         }
     }
 }
