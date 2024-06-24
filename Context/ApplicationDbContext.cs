@@ -6,7 +6,7 @@ namespace SQL_API.Context
     public class ApplicationDbContext : DbContext
     {
         public DbSet<Link> LINKS { get; set; }
-
+        public DbSet<ChatModel> CHAT { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
