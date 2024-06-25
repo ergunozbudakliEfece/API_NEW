@@ -74,7 +74,31 @@ namespace SQL_API.Controllers
 
             return JsonConvert.SerializeObject(table);
         }
+        [HttpGet("active")]
+        public string GetAllActiveUsers()
+        {
 
+            DataTable table = new DataTable();
+
+
+            string query = @"SELECT USER_ID,USER_NAME,USER_FIRSTNAME,USER_LASTNAME,ACTIVE FROM TBL_USERDATA WHERE ACTIVE=1";
+
+            string sqldataSource = _configuration.GetConnectionString("Con")!;
+            SqlDataReader sqlreader;
+            using (SqlConnection mycon = new SqlConnection(sqldataSource))
+            {
+                mycon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                {
+                    sqlreader = myCommand.ExecuteReader();
+                    table.Load(sqlreader);
+                    sqlreader.Close();
+                    mycon.Close();
+                }
+            }
+
+            return JsonConvert.SerializeObject(table);
+        }
         [HttpPost, Route("UpdatePassword")]
         public async Task<IResponse> PasswordUpdate(PasswordUpdateRequest Request)
         {
