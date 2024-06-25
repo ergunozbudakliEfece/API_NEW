@@ -19,12 +19,12 @@ namespace SQL_API.Controllers
         {
             _Context = Context;
         }
-        [HttpGet("{receiverid}/{senderid}")]
+        [HttpGet("{receiverid}")]
         public async Task<IEnumerable> GetChat(string receiverid)
         {
             
         
-          return await _Context.CHAT.Where(x=>x.RECEIVER_ID== receiverid && x.RECEIVER_READ==false).ToListAsync();
+          return await _Context.CHAT.Where(x=>x.RECEIVER_ID== receiverid  && x.RECEIVER_READ==false).ToListAsync();
             
             
         }
