@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using SQL_API.Wrappers.Concrete;
 using SQL_API.Context;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SQL_API.Controllers
 {
@@ -74,21 +75,44 @@ namespace SQL_API.Controllers
             return JsonConvert.SerializeObject(table);
         }
 
-        [HttpPost("/ChangePassword")]
+        [HttpPost, Route("UpdatePassword")]
         public async Task<IResponse> PasswordUpdate(PasswordUpdateRequest Request)
         {
             try
             {
-                User Result = await _Context.USERS.Where(x => x.USER_ID == Request.USER_ID && x.ACTIVE == true).FirstOrDefaultAsync();
+                User UserResult = await _Context.USERS.Where(x => x.USER_ID == Request.USER_ID && x.ACTIVE).FirstOrDefaultAsync();
+                Link LinkResult = await _Context.LINKS.Where(x => x.TOKEN == Request.TOKEN).FirstOrDefaultAsync();
 
-                if (Result is null)
+                if (UserResult is null)
                     return new ErrorResponse("Kullanıcı bulunamadı.");
 
-                Result.USER_PASSWORD = Request.USER_PASSWORD;
+                UserResult.USER_PASSWORD = Request.USER_PASSWORD;
+                LinkResult.SITUATION = false;
+
+                _Context.USERS.Update(UserResult);
+                _Context.LINKS.Update(LinkResult);
 
                 await _Context.SaveChangesAsync();
 
                 return new SuccessResponse<string>("Başarılı.", "Şifre başarılı şekilde değiştirildi.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+
+        [HttpGet("CheckMail/{Email}")]
+        public async Task<IResponse> UserCheckWithMail(string Email)
+        {
+            try
+            {
+                User UserResult = await _Context.USERS.Where(x => x.USER_MAIL == Email && x.ACTIVE).FirstOrDefaultAsync();
+
+                if (UserResult is null)
+                    return new ErrorResponse("Kullanıcı bulunamadı.");
+
+                return new SuccessResponse<User>(UserResult, "Kullanıcı bulundu.");
             }
             catch (Exception Ex)
             {

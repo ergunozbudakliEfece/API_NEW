@@ -16,6 +16,7 @@ namespace SQL_API.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Link>().ToTable(tb => tb.HasTrigger("INSERT_EXPIRE_DATE"));
+            modelBuilder.Entity<User>().ToTable(tb => tb.HasTrigger("USERDATA_UPD"));
         }
     }
 }

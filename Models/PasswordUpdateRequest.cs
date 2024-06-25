@@ -1,8 +1,11 @@
-﻿namespace SQL_API.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SQL_API.Models
 {
     public class PasswordUpdateRequest
     {
         public int USER_ID { get; set; }
         public string USER_PASSWORD { get; set; }
+        public string TOKEN { get; set; }
     }
 }
