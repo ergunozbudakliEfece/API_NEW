@@ -15,5 +15,6 @@ namespace SQL_API.Models
         public string? CHAT { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime DATE { get; set; }
+        public string? SHOWID { get; set; }
     }
 }
