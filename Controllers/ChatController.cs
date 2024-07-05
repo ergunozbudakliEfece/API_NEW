@@ -27,12 +27,33 @@ namespace SQL_API.Controllers
         [HttpGet("{receiverid}")]
         public async Task<IEnumerable> GetChat(string receiverid)
         {
-            var list = await _Context.CHAT.Where(x => x.RECEIVER_ID == receiverid|| x.SENDER_ID == receiverid).ToListAsync();
+            var list = await _Context.CHAT.Where(x => (x.RECEIVER_ID == receiverid|| x.SENDER_ID == receiverid)&&x.SHOWID==receiverid).ToListAsync();
             list.ForEach(x => x.CHAT = Helpers.Decrypt(x.CHAT!));
             list.ForEach(x => x.RECEIVER_ID = x.RECEIVER_ID!.Trim());
             return list;
             
             
+        }
+        [HttpGet("allmychat/{receiverid}")]
+        public async Task<IEnumerable> AllChat(string receiverid)
+        {
+            var list = _Context.Database.SqlQueryRaw<Model>($"SELECT SENDER_ID FROM TBL_CHAT WHERE ((SENDER_ID={receiverid} OR RECEIVER_ID={receiverid}) AND SENDER_ID<>{receiverid}) AND SHOWID={receiverid} UNION SELECT RECEIVER_ID FROM TBL_CHAT WHERE ((SENDER_ID={receiverid} OR RECEIVER_ID={receiverid}) AND RECEIVER_ID<>10002) AND SHOWID={receiverid}");
+            var listShowId=new List<string>();
+            foreach (var x in list)
+            {
+                if (!listShowId.Contains(x.SENDER_ID!))
+                {
+                    listShowId.Add(x.SENDER_ID!);
+                }
+                
+            }
+            return listShowId;
+
+
+        }
+        public class Model
+        {
+            public string SENDER_ID { get; set; }
         }
         [HttpPost("Create")]
         public async Task<IResponse> CreateChat([FromBody] ChatModel chat)
@@ -64,6 +85,22 @@ namespace SQL_API.Controllers
                 await _Context.SaveChangesAsync();
 
                 return new SuccessResponse<string>("Başarılı", "Chat başarıyla temizlend.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse("Beklenmeyen bir hata oluştu.");
+            }
+        }
+        [HttpPost("AllDelete")]
+        public async Task<IResponse> DeleteAllChat([FromBody] ChatModel chat)
+        {
+            try
+            {
+                _Context.CHAT.Where(x => x.SHOWID==chat.SENDER_ID).ExecuteDelete();
+
+                await _Context.SaveChangesAsync();
+
+                return new SuccessResponse<string>("Başarılı", "Chat başarıyla temizlendi.");
             }
             catch (Exception Ex)
             {

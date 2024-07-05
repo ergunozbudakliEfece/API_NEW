@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace SQL_API.Models
 {
     [Table("TBL_USERDATA")]
-    public class User
+    public sealed class User
     {
         [Key]
         public int USER_ID { get; set; }

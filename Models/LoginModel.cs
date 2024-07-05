@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SQL_API.Models
 {
-    public class LoginModel
+    public sealed class LoginModel
     {
         [Key]
         public int LOG_ID { set; get; }

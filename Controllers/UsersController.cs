@@ -99,6 +99,7 @@ namespace SQL_API.Controllers
 
             return JsonConvert.SerializeObject(table);
         }
+
         [HttpPost, Route("UpdatePassword")]
         public async Task<IResponse> PasswordUpdate(PasswordUpdateRequest Request)
         {

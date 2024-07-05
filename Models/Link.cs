@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace SQL_API.Models
 {
     [Table("TBL_LINK")]
-    public class Link
+    public sealed class Link
     {
         [Key]
         public int ID { get; set; }
