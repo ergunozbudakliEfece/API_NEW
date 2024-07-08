@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using SQL_API.Models;
 
 namespace SQL_API.Context
@@ -18,6 +19,7 @@ namespace SQL_API.Context
             modelBuilder.Entity<Link>().ToTable(tb => tb.HasTrigger("INSERT_EXPIRE_DATE"));
             modelBuilder.Entity<User>().ToTable(tb => tb.HasTrigger("USERDATA_UPD"));
             modelBuilder.Entity<ChatModel>().ToTable(tb => tb.HasTrigger("INSERT_CHAT"));
+           
         }
     }
 }

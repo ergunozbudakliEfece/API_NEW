@@ -8,7 +8,10 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(jsonOpt =>
+{
+    jsonOpt.JsonSerializerOptions.PropertyNamingPolicy = null;
+}); 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
