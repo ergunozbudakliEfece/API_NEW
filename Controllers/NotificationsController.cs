@@ -8,6 +8,7 @@ using SQL_API.Models;
 using SQL_API.Wrappers.Abstract;
 using SQL_API.Wrappers.Concrete;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace SQL_API.Controllers
 {
@@ -22,22 +23,20 @@ namespace SQL_API.Controllers
         {
             _Context = Context;
         }
-        [HttpGet("{receiverid}")]
-        public async Task<IEnumerable> GetNotifications(int receiverid)
+
+        [HttpGet("{RECEIVER_ID}")]
+        public async Task<IEnumerable> GetNotifications(int RECEIVER_ID)
         {
-            
-            
-            return _Context.Database.SqlQueryRaw<NotificationModel>($"SP_NOTIFICATIONS {receiverid}");
-
-
+            return _Context.Database.SqlQueryRaw<NotificationModel>($"SP_NOTIFICATIONS {RECEIVER_ID}");
         }
-        [HttpPost("Delete/{id}/{receiverid}")]
-        public async Task<IResponse> DeleteNoti(int id,int receiverid)
+
+        [HttpPost("Delete")]
+        public async Task<IResponse> DeleteNoti(NotificationRequestModel notificationRequest)
         {
             try
             {
                 
-                var Query = $"SP_NOTIFICATIONDELETE {id},{receiverid}";
+                var Query = $"SP_NOTIFICATIONDELETE {notificationRequest.ID},{notificationRequest.RECEIVER_ID}";
 
 
                 var ChatEntry = _Context.Database.ExecuteSqlRaw(Query);
@@ -51,13 +50,56 @@ namespace SQL_API.Controllers
                 return new ErrorResponse("Beklenmeyen bir hata oluştu.");
             }
         }
-        [HttpPost("Read/{id}/{receiverid}")]
-        public async Task<IResponse> UpdateNoti(int id, int receiverid)
+        
+        [HttpPost("DeleteRange")]
+        public async Task<IResponse> DeleteRange(List<NotificationRequestModel> notificationRequest)
+        {
+            try
+            {
+                foreach(NotificationRequestModel Notification in notificationRequest)
+                {
+                    var Query = $"SP_NOTIFICATIONDELETE {Notification.ID},{Notification.RECEIVER_ID}";
+                    var ChatEntry = _Context.Database.ExecuteSqlRaw(Query);
+                }
+
+                await _Context.SaveChangesAsync();
+
+                return new SuccessResponse<string>("Başarılı", "Notification başarıyla silindi.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse("Beklenmeyen bir hata oluştu.");
+            }
+        }
+
+        [HttpPost("ReadRange")]
+        public async Task<IResponse> ReadRange(List<NotificationRequestModel> notificationRequest)
+        {
+            try
+            {
+                foreach (NotificationRequestModel Notification in notificationRequest)
+                {
+                    var Query = $"SP_NOTIFICATIONREAD {Notification.ID},{Notification.RECEIVER_ID}";
+                    var ChatEntry = _Context.Database.ExecuteSqlRaw(Query);
+                }
+
+                await _Context.SaveChangesAsync();
+
+                return new SuccessResponse<string>("Başarılı", "Notification başarıyla silindi.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse("Beklenmeyen bir hata oluştu.");
+            }
+        }
+
+        [HttpPost("Read")]
+        public async Task<IResponse> UpdateNoti(NotificationRequestModel notificationRequest)
         {
             try
             {
 
-                var Query = $"SP_NOTIFICATIONREAD {id},{receiverid}";
+                var Query = $"SP_NOTIFICATIONREAD {notificationRequest.ID},{notificationRequest.RECEIVER_ID}";
 
 
                 var ChatEntry = _Context.Database.ExecuteSqlRaw(Query);
@@ -71,13 +113,14 @@ namespace SQL_API.Controllers
                 return new ErrorResponse("Beklenmeyen bir hata oluştu.");
             }
         }
-        [HttpPost("Target/{id}/{receiverid}")]
-        public async Task<IResponse> CreateTarget(int id, int receiverid)
+
+        [HttpPost("Target")]
+        public async Task<IResponse> CreateTarget(NotificationRequestModel notificationRequest)
         {
             try
             {
 
-                var Query = $"SP_NOTIFICATIONTARGETINS {id},{receiverid}";
+                var Query = $"SP_NOTIFICATIONTARGETINS {notificationRequest.ID},{notificationRequest.RECEIVER_ID}";
 
 
                 var ChatEntry = _Context.Database.ExecuteSqlRaw(Query);
@@ -91,6 +134,7 @@ namespace SQL_API.Controllers
                 return new ErrorResponse("Beklenmeyen bir hata oluştu.");
             }
         }
+
         [HttpPost("InsertNoti")]
         public async Task<IResponse> CreateNoti([FromBody] NotificationModel noti)
         {
@@ -111,6 +155,5 @@ namespace SQL_API.Controllers
                 return new ErrorResponse("Beklenmeyen bir hata oluştu.");
             }
         }
-
     }
 }
