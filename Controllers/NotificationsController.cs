@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using SQL_API.Context;
-using SQL_API.Helper;
 using SQL_API.Models;
-using SQL_API.Wrappers.Abstract;
-using SQL_API.Wrappers.Concrete;
-using System.Collections;
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace SQL_API.Controllers
 {
@@ -25,135 +22,114 @@ namespace SQL_API.Controllers
         }
 
         [HttpGet("{RECEIVER_ID}")]
-        public async Task<IEnumerable> GetNotifications(int RECEIVER_ID)
+        public async Task<IQueryable> GetNotifications(string RECEIVER_ID) 
         {
-            return _Context.Database.SqlQueryRaw<NotificationModel>($"SP_NOTIFICATIONS {RECEIVER_ID}");
+            return _Context.Database.SqlQueryRaw<NotificationQuery>($"SP_NOTIFICATIONS {RECEIVER_ID}");
         }
 
-        [HttpPost("Delete")]
-        public async Task<IResponse> DeleteNoti(NotificationRequestModel notificationRequest)
+
+        [HttpGet("sent/{SENDER_ID?}")]
+        public async Task<IQueryable> GetNotificationsSent(string? SENDER_ID)
         {
-            try
-            {
-                
-                var Query = $"SP_NOTIFICATIONDELETE {notificationRequest.ID},{notificationRequest.RECEIVER_ID}";
+            if (SENDER_ID is null)
+                return _Context.Database.SqlQueryRaw<NotificationSentQuery>("SP_NOTIFICATIONSSENT");
 
-
-                var ChatEntry = _Context.Database.ExecuteSqlRaw(Query);
-
-                await _Context.SaveChangesAsync();
-
-                return new SuccessResponse<string>("Başarılı", "Notification başarıyla silindi.");
-            }
-            catch (Exception Ex)
-            {
-                return new ErrorResponse("Beklenmeyen bir hata oluştu.");
-            }
+            return _Context.Database.SqlQueryRaw<NotificationSentQuery>($"SP_NOTIFICATIONSSENT {SENDER_ID}");
         }
-        
-        [HttpPost("DeleteRange")]
-        public async Task<IResponse> DeleteRange(List<NotificationRequestModel> notificationRequest)
+
+        [HttpPost("Create")]
+        public async Task<Notification> CreateNotification(NotificationCreateRequest CreateRequest) 
         {
-            try
+            EntityEntry<Notification> Created = await _Context.NOTIFICATIONS.AddAsync(CreateRequest.Notification);
+
+            await _Context.SaveChangesAsync();
+
+            foreach (int USER_ID in CreateRequest.Users)
             {
-                foreach(NotificationRequestModel Notification in notificationRequest)
+                _Context.Database.ExecuteSqlRaw($"SP_NOTIFICATIONTARGETINS {Created.Entity.NOTIFICATION_ID},{USER_ID}");
+            }
+
+            return Created.Entity;
+        }
+
+        [HttpGet("ReadNotificationFromTarget/{USER_ID}/{NOTIFICATION_ID}")]
+        public async Task ReadNotificationFromTarget(int USER_ID, int NOTIFICATION_ID)
+        {
+            _Context.Database.ExecuteSqlRaw($"SP_NOTIFICATIONREAD {NOTIFICATION_ID},{USER_ID}");
+        }
+
+        [HttpPost("ReadRangeNotificationFromTarget")]
+        public async Task ReadRangeNotificationFromTarget(List<NotificationRequest> NOTIFICATIONS)
+        {
+            foreach (NotificationRequest NOTIFICATION in NOTIFICATIONS)
+            {
+                IQueryable<NotificationTarget> Targets = _Context.NOTIFICATIONTARGETS.Where(x => x.RECEIVER_ID == NOTIFICATION.RECEIVER_ID && x.NOTIFICATION_ID == NOTIFICATION.ID).AsQueryable();
+
+                foreach (NotificationTarget Target in Targets)
                 {
-                    var Query = $"SP_NOTIFICATIONDELETE {Notification.ID},{Notification.RECEIVER_ID}";
-                    var ChatEntry = _Context.Database.ExecuteSqlRaw(Query);
+                    Target.RECEIVER_READ = true;
                 }
-
-                await _Context.SaveChangesAsync();
-
-                return new SuccessResponse<string>("Başarılı", "Notification başarıyla silindi.");
             }
-            catch (Exception Ex)
-            {
-                return new ErrorResponse("Beklenmeyen bir hata oluştu.");
-            }
+
+            await _Context.SaveChangesAsync();
         }
 
-        [HttpPost("ReadRange")]
-        public async Task<IResponse> ReadRange(List<NotificationRequestModel> notificationRequest)
+        [HttpDelete("DeleteNotificationFromTarget/{USER_ID}/{NOTIFICATION_ID}")]
+        public async Task DeleteNotificationFromTarget(int USER_ID, int NOTIFICATION_ID)
         {
-            try
+            IQueryable<NotificationTarget> Targets = _Context.NOTIFICATIONTARGETS.Where(x => x.RECEIVER_ID == USER_ID && x.NOTIFICATION_ID == NOTIFICATION_ID).AsQueryable();
+
+            foreach (NotificationTarget Target in Targets)
             {
-                foreach (NotificationRequestModel Notification in notificationRequest)
+                Target.RECEIVER_DELETE = true;
+            }
+
+            await _Context.SaveChangesAsync();
+        }
+
+        [HttpPost("DeleteRangeNotificationFromTarget")]
+        public async Task DeleteRangeNotificationFromTarget(List<NotificationRequest> NOTIFICATIONS)
+        {
+            foreach (NotificationRequest NOTIFICATION in NOTIFICATIONS)
+            {
+                IQueryable<NotificationTarget> Targets = _Context.NOTIFICATIONTARGETS.Where(x => x.RECEIVER_ID == NOTIFICATION.RECEIVER_ID && x.NOTIFICATION_ID == NOTIFICATION.ID).AsQueryable();
+
+                foreach (NotificationTarget Target in Targets)
                 {
-                    var Query = $"SP_NOTIFICATIONREAD {Notification.ID},{Notification.RECEIVER_ID}";
-                    var ChatEntry = _Context.Database.ExecuteSqlRaw(Query);
+                    Target.RECEIVER_DELETE = true;
                 }
-
-                await _Context.SaveChangesAsync();
-
-                return new SuccessResponse<string>("Başarılı", "Notification başarıyla silindi.");
             }
-            catch (Exception Ex)
-            {
-                return new ErrorResponse("Beklenmeyen bir hata oluştu.");
-            }
+
+            await _Context.SaveChangesAsync();
         }
 
-        [HttpPost("Read")]
-        public async Task<IResponse> UpdateNoti(NotificationRequestModel notificationRequest)
+        [HttpDelete("DeleteAllNotificationFromTarget/{NOTIFICATION_ID}")]
+        public async Task DeleteAllNotificationFromTarget(int NOTIFICATION_ID) 
         {
-            try
+            IQueryable<NotificationTarget> Targets = _Context.NOTIFICATIONTARGETS.Where(x => x.NOTIFICATION_ID == NOTIFICATION_ID).AsQueryable();
+
+            foreach (NotificationTarget Target in Targets)
             {
-
-                var Query = $"SP_NOTIFICATIONREAD {notificationRequest.ID},{notificationRequest.RECEIVER_ID}";
-
-
-                var ChatEntry = _Context.Database.ExecuteSqlRaw(Query);
-
-                await _Context.SaveChangesAsync();
-
-                return new SuccessResponse<string>("Başarılı", "Notification başarıyla update edildi.");
+                Target.RECEIVER_DELETE = true;
             }
-            catch (Exception Ex)
-            {
-                return new ErrorResponse("Beklenmeyen bir hata oluştu.");
-            }
+
+            await _Context.SaveChangesAsync();
         }
 
-        [HttpPost("Target")]
-        public async Task<IResponse> CreateTarget(NotificationRequestModel notificationRequest)
+        [HttpPost("DeleteRangeAllNotificationFromTarget")]
+        public async Task DeleteRangeAllNotificationFromTarget(List<int> NOTIFICATIONS)
         {
-            try
+            foreach(int NOTIFICATION_ID in NOTIFICATIONS)
             {
+                IQueryable<NotificationTarget> Targets = _Context.NOTIFICATIONTARGETS.Where(x => x.NOTIFICATION_ID == NOTIFICATION_ID).AsQueryable();
 
-                var Query = $"SP_NOTIFICATIONTARGETINS {notificationRequest.ID},{notificationRequest.RECEIVER_ID}";
-
-
-                var ChatEntry = _Context.Database.ExecuteSqlRaw(Query);
-
-                await _Context.SaveChangesAsync();
-
-                return new SuccessResponse<string>("Başarılı", "Target başarıyla insert edildi.");
+                foreach (NotificationTarget Target in Targets)
+                {
+                    Target.RECEIVER_DELETE = true;
+                }
             }
-            catch (Exception Ex)
-            {
-                return new ErrorResponse("Beklenmeyen bir hata oluştu.");
-            }
-        }
 
-        [HttpPost("InsertNoti")]
-        public async Task<IResponse> CreateNoti([FromBody] NotificationModel noti)
-        {
-            try
-            {
-
-                var Query = $"SP_NOTIFICATIONINS {noti.SENDER_ID},'{noti.SUBJECT}','{noti.NOTIFICATION_BODY}',{noti.IMPORTANCE}";
-
-
-                var ChatEntry = _Context.Database.ExecuteSqlRaw(Query);
-
-                await _Context.SaveChangesAsync();
-
-                return new SuccessResponse<string>("Başarılı", "Notification başarıyla insert edildi.");
-            }
-            catch (Exception Ex)
-            {
-                return new ErrorResponse("Beklenmeyen bir hata oluştu.");
-            }
+            await _Context.SaveChangesAsync();
         }
     }
 }

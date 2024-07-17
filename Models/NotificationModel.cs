@@ -4,6 +4,7 @@ namespace SQL_API.Models
 {
     public class NotificationModel
     {
+        public byte TYPE { get; set; }
         [Column("NOTIFICATION_ID")]
         public int NOTIFICATION_ID { get; set; }
         public int RECEIVER_ID { get; set; }
