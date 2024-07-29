@@ -66,14 +66,14 @@ namespace SQL_API.Controllers
             }
             return JsonConvert.SerializeObject(table);
         }
-        [HttpGet("Ekle/{id}/{moduleid}")]
-        public string GetEkle(int id, int moduleid)
+        [HttpGet("Ekle/{id}/{moduleid}/{insid}")]
+        public string GetEkle(int id, int moduleid,int insid)
         {
             try
             {
 
 
-                string query = @"INSERT INTO TBL_ROLEAUTH  VALUES(" + id + "," + moduleid + ")";
+                string query = @"INSERT INTO TBL_ROLEAUTH(ROLE_ID,MODULE_ID,INS_USER_ID)  VALUES(" + id + "," + moduleid + ","+insid+")";
 
                 string sqldataSource = _configuration.GetConnectionString("Con")!;
                 SqlDataReader sqlreader;
@@ -128,14 +128,14 @@ namespace SQL_API.Controllers
         }
         
 
-        [HttpGet("ekle/{rolName}")]
-        public string Update(string rolName)
+        [HttpGet("ekle/{rolName}/{insid}")]
+        public string Update(string rolName,int insid)
         {
             try
             {
 
 
-                string query = @"INSERT INTO TBL_ROLESDETAILS VALUES('" + rolName + "')";
+                string query = @"INSERT INTO TBL_ROLESDETAILS(NAME,INS_USER_ID) VALUES('" + rolName + "',"+insid+")";
 
                 string sqldataSource = _configuration.GetConnectionString("Con")!;
                 SqlDataReader sqlreader;

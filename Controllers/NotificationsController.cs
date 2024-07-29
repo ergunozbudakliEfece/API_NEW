@@ -6,6 +6,8 @@ using SQL_API.Context;
 using SQL_API.Models;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using SQL_API.Wrappers.Concrete;
+using SQL_API.Wrappers.Abstract;
 
 namespace SQL_API.Controllers
 {
@@ -34,7 +36,24 @@ namespace SQL_API.Controllers
             if (SENDER_ID is null)
                 return _Context.Database.SqlQueryRaw<NotificationSentQuery>("SP_NOTIFICATIONSSENT");
 
-            return _Context.Database.SqlQueryRaw<NotificationSentQuery>($"SP_NOTIFICATIONSSENT {SENDER_ID}");
+            return _Context.Database.SqlQueryRaw<NotificationSentQuery>($"SP_NOTIFICATIONUSERDETAIL {SENDER_ID}");
+        }
+        [HttpGet("detail/{NOTIFICATION_ID?}")]
+        public async Task<IResponse> GetNotificationsSent(int? NOTIFICATION_ID)
+        {
+            try
+            {
+
+                List<NotificationUserDetail> list = await _Context.Database.SqlQueryRaw<NotificationUserDetail>($"SP_NOTIFICATIONUSERDETAIL {NOTIFICATION_ID}")!.ToListAsync();
+                return new SuccessResponse<List<NotificationUserDetail>>(list, "Başarılı.");
+
+
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+
         }
 
         [HttpPost("Create")]
@@ -61,17 +80,11 @@ namespace SQL_API.Controllers
         [HttpPost("ReadRangeNotificationFromTarget")]
         public async Task ReadRangeNotificationFromTarget(List<NotificationRequest> NOTIFICATIONS)
         {
-            foreach (NotificationRequest NOTIFICATION in NOTIFICATIONS)
+            foreach (NotificationRequest Notification in NOTIFICATIONS)
             {
-                IQueryable<NotificationTarget> Targets = _Context.NOTIFICATIONTARGETS.Where(x => x.RECEIVER_ID == NOTIFICATION.RECEIVER_ID && x.NOTIFICATION_ID == NOTIFICATION.ID).AsQueryable();
-
-                foreach (NotificationTarget Target in Targets)
-                {
-                    Target.RECEIVER_READ = true;
-                }
+                _Context.Database.ExecuteSqlRaw($"SP_NOTIFICATIONREAD {Notification.ID},{Notification.RECEIVER_ID}");
             }
-
-            await _Context.SaveChangesAsync();
+           
         }
 
         [HttpDelete("DeleteNotificationFromTarget/{USER_ID}/{NOTIFICATION_ID}")]

@@ -3,6 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using System.Data.SqlClient;
 using System.Data;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using SQL_API.Models;
+using SQL_API.Wrappers.Abstract;
+using SQL_API.Wrappers.Concrete;
+using SQL_API.Context;
 
 namespace SQL_API.Controllers
 {
@@ -11,9 +17,11 @@ namespace SQL_API.Controllers
     public class MenuController : ControllerBase
     {
         private readonly IConfiguration _configuration;
-        public MenuController(IConfiguration configuration)
+        private readonly ApplicationDbContext _Context;
+        public MenuController(IConfiguration configuration, ApplicationDbContext Context)
         {
             _configuration = configuration;
+            _Context = Context;
         }
         [HttpGet("{userid}")]
         public string Get(int userid)
@@ -40,6 +48,23 @@ namespace SQL_API.Controllers
             }
 
             return JsonConvert.SerializeObject(table);
+        }
+        
+        [HttpGet("Favorite/{UserID}")]
+        public async Task<IResponse> GetBirthdays(int UserID)
+        {
+            try
+            {
+                
+                    List<FavoriteModuleModel> list = await _Context.Database.SqlQueryRaw<FavoriteModuleModel>($"EXEC SP_FAVORITEMODULES {UserID}")!.ToListAsync();
+                    return new SuccessResponse<List<FavoriteModuleModel>>(list, "Başarılı.");
+                
+               
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
         }
     }
 }

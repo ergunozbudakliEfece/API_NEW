@@ -129,14 +129,14 @@ namespace SQL_API.Controllers
             }
             return JsonConvert.SerializeObject(table);
         }
-        [HttpGet("Ekle/{userid}/{moduleid}")]
-        public string GetEkle(int userid, int moduleid)
+        [HttpGet("Ekle/{userid}/{moduleid}/{insid}")]
+        public string GetEkle(int userid, int moduleid,int insid)
         {
             try
             {
 
 
-                string query = @"INSERT INTO TBL_AUTH  VALUES(" + userid + "," + moduleid + ")";
+                string query = @"INSERT INTO TBL_AUTH(USER_ID,MODULE_ID,INS_USER_ID)  VALUES(" + userid + "," + moduleid + ","+insid+")";
 
                 string sqldataSource = _configuration.GetConnectionString("Con")!;
                 SqlDataReader sqlreader;
@@ -159,14 +159,14 @@ namespace SQL_API.Controllers
             }
             return "BAŞARILI";
         }
-        [HttpGet("copyrole/{userid}/{id}")]
-        public string GetCopy(int userid, int id)
+        [HttpGet("copyrole/{userid}/{id}/{insid}")]
+        public string GetCopy(int userid, int id,int insid)
         {
             try
             {
 
 
-                string query = @"SP_COPYAUTHROLE " + userid + "," + id;
+                string query = @"SP_COPYAUTHROLE " + userid + "," + id+","+insid;
 
                 string sqldataSource = _configuration.GetConnectionString("Con")!;
                 SqlDataReader sqlreader;
@@ -189,14 +189,14 @@ namespace SQL_API.Controllers
             }
             return "BAŞARILI";
         }
-        [HttpGet("copyuser/{userid1}/{userid2}")]
-        public string GetCopyUser(int userid1, int userid2)
+        [HttpGet("copyuser/{userid1}/{userid2}/{insid}")]
+        public string GetCopyUser(int userid1, int userid2,int insid)
         {
             try
             {
 
 
-                string query = @"SP_COPYAUTHUSER " + userid1 + "," + userid2;
+                string query = @"SP_COPYAUTHUSER " + userid1 + "," + userid2+","+insid;
 
                 string sqldataSource = _configuration.GetConnectionString("Con")!;
                 SqlDataReader sqlreader;
@@ -249,14 +249,12 @@ namespace SQL_API.Controllers
             }
             return "BAŞARILI";
         }
-        [HttpGet("ozel/Ekle/{userid}/{moduleid}")]
-        public string GetOZELEkle(int userid, int moduleid)
+        [HttpGet("ozel/Ekle/{userid}/{moduleid}/{insid}")]
+        public string GetOZELEkle(int userid, int moduleid,int insid)
         {
             try
             {
-
-
-                string query = @"INSERT INTO TBL_PRIVATEAUTH  VALUES(" + userid + "," + moduleid + ")";
+                string query = @"INSERT INTO TBL_PRIVATEAUTH(USER_ID,MODULE_ID,INS_USER_ID)  VALUES(" + userid + "," + moduleid + ","+insid+")";
 
                 string sqldataSource = _configuration.GetConnectionString("Con")!;
                 SqlDataReader sqlreader;
