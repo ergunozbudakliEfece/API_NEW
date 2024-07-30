@@ -26,6 +26,7 @@ namespace SQL_API.Context
             modelBuilder.Entity<ChatModel>().ToTable(tb => tb.HasTrigger("INSERT_CHAT"));
 
             modelBuilder.Entity<Notification>().ToTable(tb => tb.HasTrigger("NOTIFICATIONS_INS_DATE"));
+            modelBuilder.Entity<NotificationTarget>().ToTable(tb => tb.HasTrigger("NOTIFICATIONTARGET_UPD_DATE"));
 
         }
     }

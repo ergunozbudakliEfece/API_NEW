@@ -119,11 +119,17 @@ namespace SQL_API.Controllers
         [HttpDelete("DeleteAllNotificationFromTarget/{NOTIFICATION_ID}")]
         public async Task DeleteAllNotificationFromTarget(int NOTIFICATION_ID) 
         {
+            Notification Notification = _Context.NOTIFICATIONS.Where(x => x.NOTIFICATION_ID == NOTIFICATION_ID).FirstOrDefault();
             IQueryable<NotificationTarget> Targets = _Context.NOTIFICATIONTARGETS.Where(x => x.NOTIFICATION_ID == NOTIFICATION_ID).AsQueryable();
+
+            if (Notification is not null)
+            {
+                _Context.NOTIFICATIONS.Remove(Notification);
+            }
 
             foreach (NotificationTarget Target in Targets)
             {
-                Target.RECEIVER_DELETE = true;
+                _Context.NOTIFICATIONTARGETS.Remove(Target);
             }
 
             await _Context.SaveChangesAsync();
@@ -134,11 +140,17 @@ namespace SQL_API.Controllers
         {
             foreach(int NOTIFICATION_ID in NOTIFICATIONS)
             {
+                Notification Notification = _Context.NOTIFICATIONS.Where(x => x.NOTIFICATION_ID == NOTIFICATION_ID).FirstOrDefault();
                 IQueryable<NotificationTarget> Targets = _Context.NOTIFICATIONTARGETS.Where(x => x.NOTIFICATION_ID == NOTIFICATION_ID).AsQueryable();
+
+                if(Notification is not null)
+                {
+                    _Context.NOTIFICATIONS.Remove(Notification);
+                }
 
                 foreach (NotificationTarget Target in Targets)
                 {
-                    Target.RECEIVER_DELETE = true;
+                    _Context.NOTIFICATIONTARGETS.Remove(Target);
                 }
             }
 

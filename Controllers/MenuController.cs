@@ -66,5 +66,20 @@ namespace SQL_API.Controllers
                 return new ErrorResponse(Ex);
             }
         }
+
+        [HttpPost("ElapsedTime")]
+        public async Task<IResponse> UpdateElapsedTime(int UserID, int ModuleID, int ElapsedTime)
+        {
+            try
+            {
+                int EffectedRow = await _Context.Database.ExecuteSqlAsync($"EXEC SP_ACTIVITYINS {UserID},{ModuleID},{ElapsedTime}");
+
+                return new SuccessResponse<string>("Geçen süre başarıyla güncellendi.", "Başarılı.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
     }
 }
