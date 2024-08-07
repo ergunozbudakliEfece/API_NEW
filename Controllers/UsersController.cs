@@ -11,6 +11,10 @@ using Newtonsoft.Json.Linq;
 using SQL_API.Wrappers.Concrete;
 using SQL_API.Context;
 using Microsoft.AspNetCore.Authorization;
+using SQL_API.Services.MailService.Concrete;
+using SQL_API.Services.MailService.Abstract;
+using SQL_API.Services.MailService.Utils;
+using SQL_API.Utils.Encryptions;
 
 namespace SQL_API.Controllers
 {
@@ -20,11 +24,13 @@ namespace SQL_API.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly ApplicationDbContext _Context;
+        private readonly IEmailService EmailService;
 
-        public UsersController( IConfiguration configuration, ApplicationDbContext Context)
+        public UsersController( IConfiguration configuration, ApplicationDbContext Context, IEmailService MailService)
         {
             _configuration = configuration;
             _Context = Context;
+            EmailService = MailService;
         }
         [HttpGet("usernames")]
         public string GetAUserByNames()
@@ -285,9 +291,39 @@ namespace SQL_API.Controllers
                 var active = user.ACTIVE == true ? 1 : 0;
                 var query = $"INSERT INTO TBL_USERDATA(USER_NAME,USER_FIRSTNAME,USER_LASTNAME,ACTIVE,USER_MAIL,USER_TYPE,INS_USER_ID,ROLE_ID) VALUES('{user.USER_NAME}','{user.USER_FIRSTNAME}','{user.USER_LASTNAME}',{active},'{user.USER_MAIL}','{user.USER_TYPE}',{user.INS_USER_ID},{user.ROLE_ID})";
                     await _Context.Database.ExecuteSqlRawAsync(query)!;
-                    return new SuccessResponse<string>("Başarılı", "Başarılı.");
+                var newuser= await _Context.USERS.FirstOrDefaultAsync(x => x.USER_NAME == user.USER_NAME);
+                string Token = AESEncryption.Encrypt($"{newuser!.USER_ID};{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}");
+                string Url = $"{Request.Scheme}://192.168.2.13:86/UpdatePassword?Token={Token}";
+                Email PasswordMail = new Email()
+                {
+                    From = "sistem@efecegalvaniz.com",
+                    To = user.USER_MAIL,
+                    Subject = "NOVA | Şifre Belirleme",
+                    Body = "Merhaba " + newuser.USER_FIRSTNAME + ",</br></br>Nova üzerinde kullanıcınız oluşturulmuştur. Aşağıdakı butona tıklayarak şifrenizi belirleyebilirsiniz.</br></br>" +
+                         "<div><!--[if mso]><v:roundrect xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:w=\"urn:schemas-microsoft-com:office:word\" href=\"" + Url + "\"style=\"height:35px;v-text-anchor:middle;width:200px;\" arcsize=\"71.42857142857143%\" stroke=\"f\" fillcolor=\"#0052A3\"><w:anchorlock/><center><![endif]--><a href=\"\"+Url+\"\" style=\"background-color:#0052A3;border-radius:25px;color:#e4e4e4;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:bold;line-height:35px;text-align:center;text-decoration:none;width:200px;-webkit-text-size-adjust:none;\">Şifremi Oluştur</a><!--[if mso]></center></v:roundrect><![endif]--></div></br>" +
+                         "İyi çalışmalar dileriz.</br></br>",
+                    Signature = MailSignature.SYSTEM_SIGNATURE
+                };
+
+                EmailService.SendEmail(PasswordMail);
+
+                return new SuccessResponse<string>("Başarılı", "Başarılı.");
                 
                
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+        [HttpPost, Route("sil/{userid}")]
+        public async Task<IResponse> RemoveUser(int userid)
+        {
+            try
+            {
+                _=await _Context.USERS.Where(x => x.USER_ID == userid).ExecuteDeleteAsync();
+                _=await _Context.SaveChangesAsync();
+                return new SuccessResponse<string>("Başarılı", "Başarılı.");
             }
             catch (Exception Ex)
             {

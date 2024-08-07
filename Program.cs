@@ -4,6 +4,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SQL_API.Context;
 using SQL_API.Models;
+using SQL_API.Services.MailService.Abstract;
+using SQL_API.Services.MailService.Concrete;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers().AddJsonOptions(jsonOpt =>
 {
     jsonOpt.JsonSerializerOptions.PropertyNamingPolicy = null;
-}); 
+});
+builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>

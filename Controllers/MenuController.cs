@@ -23,7 +23,7 @@ namespace SQL_API.Controllers
             _configuration = configuration;
             _Context = Context;
         }
-        [HttpGet("{userid}")]
+        [HttpGet("TR/{userid}")]
         public string Get(int userid)
         {
 
@@ -31,7 +31,7 @@ namespace SQL_API.Controllers
             DataTable table = new DataTable();
 
 
-            string query = "EXEC SP_USERMENU " + userid;
+            string query = "EXEC SP_USERMENU_TR " + userid;
 
             string sqldataSource = _configuration.GetConnectionString("Con")!;
             SqlDataReader sqlreader;
@@ -49,17 +49,58 @@ namespace SQL_API.Controllers
 
             return JsonConvert.SerializeObject(table);
         }
-        
-        [HttpGet("Favorite/{UserID}")]
-        public async Task<IResponse> GetBirthdays(int UserID)
+        [HttpGet("en/{userid}")]
+        public string GetEn(int userid)
+        {
+
+
+            DataTable table = new DataTable();
+
+
+            string query = "EXEC SP_USERMENU_EN " + userid;
+
+            string sqldataSource = _configuration.GetConnectionString("Con")!;
+            SqlDataReader sqlreader;
+            using (SqlConnection mycon = new SqlConnection(sqldataSource))
+            {
+                mycon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                {
+                    sqlreader = myCommand.ExecuteReader();
+                    table.Load(sqlreader);
+                    sqlreader.Close();
+                    mycon.Close();
+                }
+            }
+
+            return JsonConvert.SerializeObject(table);
+        }
+        [HttpGet("Favorite/Tr/{UserID}")]
+        public async Task<IResponse> GetFavTr(int UserID)
         {
             try
             {
                 
-                    List<FavoriteModuleModel> list = await _Context.Database.SqlQueryRaw<FavoriteModuleModel>($"EXEC SP_FAVORITEMODULES {UserID}")!.ToListAsync();
+                    List<FavoriteModuleModel> list = await _Context.Database.SqlQueryRaw<FavoriteModuleModel>($"EXEC SP_FAVORITEMODULESTR {UserID}")!.ToListAsync();
                     return new SuccessResponse<List<FavoriteModuleModel>>(list, "Başarılı.");
                 
                
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+        [HttpGet("Favorite/En/{UserID}")]
+        public async Task<IResponse> GetFavEn(int UserID)
+        {
+            try
+            {
+
+                List<FavoriteModuleModel> list = await _Context.Database.SqlQueryRaw<FavoriteModuleModel>($"EXEC SP_FAVORITEMODULESEN {UserID}")!.ToListAsync();
+                return new SuccessResponse<List<FavoriteModuleModel>>(list, "Başarılı.");
+
+
             }
             catch (Exception Ex)
             {

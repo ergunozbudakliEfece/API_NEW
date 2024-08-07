@@ -14,7 +14,7 @@ namespace SQL_API.Context
         public DbSet<ChatModel> CHAT { get; set; }
         public DbSet<Notification> NOTIFICATIONS { get; set; }
         public DbSet<NotificationTarget> NOTIFICATIONTARGETS { get; set; }
-
+        public DbSet<CityModel> CITIES { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
