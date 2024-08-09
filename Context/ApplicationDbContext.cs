@@ -9,6 +9,8 @@ namespace SQL_API.Context
     public class ApplicationDbContext : DbContext
     {
         public DbSet<Link> LINKS { get; set; }
+        public DbSet<UnitsModel> UNITS { get; set; }
+        public DbSet<WorkTitleModel> TITLES { get; set; }
         public DbSet<User> USERS { get; set; }
         public DbSet<TypeModel> TYPES { get; set; }
         public DbSet<ChatModel> CHAT { get; set; }

@@ -39,8 +39,8 @@ namespace SQL_API.Controllers
             }
             return new ObjectResult(JsonConvert.SerializeObject(table));
         }
-        [HttpPut]
-        public IActionResult Update([FromBody] LoginModel item)
+        [HttpPost("Update")]
+        public IActionResult Update(LoginUpdateModel item)
         {
             string query = @"UPDATE TBL_LOGIN SET LAST_ACTIVITY="+item.LAST_ACTIVITY+" WHERE LOG_ID="+item.LOG_ID;
 

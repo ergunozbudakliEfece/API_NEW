@@ -109,11 +109,11 @@ namespace SQL_API.Controllers
         }
 
         [HttpPost("ElapsedTime")]
-        public async Task<IResponse> UpdateElapsedTime(int UserID, int ModuleID, int ElapsedTime)
+        public async Task<IResponse> UpdateElapsedTime(int UserID, int ModuleID, int ElapsedTime,int LogID)
         {
             try
             {
-                int EffectedRow = await _Context.Database.ExecuteSqlAsync($"EXEC SP_ACTIVITYINS {UserID},{ModuleID},{ElapsedTime}");
+                int EffectedRow = await _Context.Database.ExecuteSqlAsync($"EXEC SP_ACTIVITYINS {UserID},{ModuleID},{ElapsedTime},{LogID}");
 
                 return new SuccessResponse<string>("Geçen süre başarıyla güncellendi.", "Başarılı.");
             }
