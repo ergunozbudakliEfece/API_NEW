@@ -456,16 +456,13 @@ namespace SQL_API.Controllers
             }
         }
 
-        [HttpGet("GetUsageStatistic/{UserID}")]
-        public async Task<IResponse> GetUsageStatistic(int UserID = 0)
+        [HttpGet("GetUsageStatistic/{Culture}/{UserID}")]
+        public async Task<IResponse> GetUsageStatistic(string Culture, int UserID = 0)
         {
             try
             {
-
-                List<UsageStatisticModel> list = await _Context.Database.SqlQueryRaw<UsageStatisticModel>($"EXEC SP_USAGESTATISTICS {UserID}")!.ToListAsync();
+                List<UsageStatisticModel> list = await _Context.Database.SqlQueryRaw<UsageStatisticModel>($"EXEC SP_USAGESTATISTICS {UserID}, '{Culture}'")!.ToListAsync();
                 return new SuccessResponse<List<UsageStatisticModel>>(list, "Başarılı.");
-
-
             }
             catch (Exception Ex)
             {
