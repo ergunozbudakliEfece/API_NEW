@@ -136,7 +136,7 @@ namespace SQL_API.Controllers
             DataTable table = new DataTable();
 
 
-            string query = $"SELECT * FROM TBL_PERSONALDATA WHERE USER_ID={PersonaID}";
+            string query = $"SP_USERDATA {PersonaID}";
 
             string sqldataSource = _configuration.GetConnectionString("Con")!;
             SqlDataReader sqlreader;
@@ -392,7 +392,7 @@ namespace SQL_API.Controllers
                 Email PasswordMail = new Email()
                 {
                     From = "sistem@efecegalvaniz.com",
-                    To = (user.USER_MAIL?? "sistem@efecegalvaniz.com"),
+                    To = (user.USER_MAIL==null||user.USER_MAIL==""? "sistem@efecegalvaniz.com":user.USER_MAIL),
                     Subject = "NOVA | Şifre Belirleme",
                     Body = "Merhaba " + newuser.USER_FIRSTNAME + ",</br></br>Nova üzerinde kullanıcınız oluşturulmuştur. Aşağıdakı butona tıklayarak şifrenizi belirleyebilirsiniz.</br></br>" +
                          "<div><!--[if mso]><v:roundrect xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:w=\"urn:schemas-microsoft-com:office:word\" href=\"" + Url + "\"style=\"height:35px;v-text-anchor:middle;width:200px;\" arcsize=\"71.42857142857143%\" stroke=\"f\" fillcolor=\"#0052A3\"><w:anchorlock/><center><![endif]--><a href=\"\"+Url+\"\" style=\"background-color:#0052A3;border-radius:25px;color:#e4e4e4;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:bold;line-height:35px;text-align:center;text-decoration:none;width:200px;-webkit-text-size-adjust:none;\">Şifremi Oluştur</a><!--[if mso]></center></v:roundrect><![endif]--></div></br>" +
