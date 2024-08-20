@@ -398,7 +398,7 @@ namespace SQL_API.Controllers
 
                 string query = @"DELETE FROM TBL_PRIVATEAUTH WHERE USER_ID= " + userid + " AND MODULE_ID=" + moduleid;
 
-                string sqldataSource = _configuration.GetConnectionString("Connn")!;
+                string sqldataSource = _configuration.GetConnectionString("Con")!;
                 SqlDataReader sqlreader;
                 using (SqlConnection mycon = new SqlConnection(sqldataSource))
                 {

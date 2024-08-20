@@ -3,11 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SQL_API.Models
 {
-    
-    public sealed class PersonalModel
+    [Table("TBL_PERSONALDATA")]
+    public sealed class PersonelModel
     {
-        public string? USER_FIRSTNAME { get; set; }
-        public string? USER_LASTNAME { get; set; }
+        [Key]
         public int USER_ID { get; set; }
         public string? CINSIYET { get; set; }
         public string? SUBE { get; set; }

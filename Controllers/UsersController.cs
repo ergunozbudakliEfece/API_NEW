@@ -16,6 +16,9 @@ using SQL_API.Services.MailService.Abstract;
 using SQL_API.Services.MailService.Utils;
 using SQL_API.Utils.Encryptions;
 using System;
+using SQL_API.Helper;
+using System.Collections;
+using System.Globalization;
 
 namespace SQL_API.Controllers
 {
@@ -62,7 +65,7 @@ namespace SQL_API.Controllers
             DataTable table = new DataTable();
 
 
-            string query = @"SELECT USER_ID,USER_NAME FROM TBL_USERDATA";
+            string query = @"SELECT UD.USER_ID,USER_NAME,NAME FROM TBL_USERDATA UD WITH(NOLOCK) LEFT JOIN TBL_ROLESDETAILS RD WITH(NOLOCK) ON RD.ID=UD.ROLE_ID";
 
             string sqldataSource = _configuration.GetConnectionString("Con")!;
             SqlDataReader sqlreader;
@@ -221,12 +224,12 @@ namespace SQL_API.Controllers
                 return new ErrorResponse(Ex);
             }
         }
-        [HttpGet("UserCheck/{UserName}")]
-        public async Task<IResponse> UserCheck(string UserName)
+        [HttpGet("UserCheck/{UserID}")]
+        public async Task<IResponse> UserCheck(int UserID)
         {
             try
             {
-                User UserResult = await _Context.USERS.Where(x => x.USER_NAME == UserName).FirstOrDefaultAsync();
+                User UserResult = await _Context.USERS.Where(x => x.USER_ID == UserID).FirstOrDefaultAsync();
 
                 if (UserResult is null)
                     return new ErrorResponse("Kullanıcı bulunamadı.");
@@ -261,13 +264,13 @@ namespace SQL_API.Controllers
             }
         }
         [Authorize]
-        [HttpGet("Profil/{UserID}")]
-        public async Task<IResponse> GetProfil(int UserID)
+        [HttpGet("Profil/{UserID}/{Type}")]
+        public async Task<IResponse> GetProfil(int UserID,string Type)
         {
             try
             {
                 
-                    List<ProfilModel> list = await _Context.Database.SqlQueryRaw<ProfilModel>("EXEC SP_USERDATA")!.ToListAsync();
+                    List<ProfilModel> list = await _Context.Database.SqlQueryRaw<ProfilModel>($"EXEC SP_USERDATA @language='{Type}'")!.ToListAsync();
                     return new SuccessResponse<List<ProfilModel>>(list.Where(x => x.USER_ID == UserID).ToList(), "Başarılı.");
                 
                 
@@ -276,6 +279,105 @@ namespace SQL_API.Controllers
             {
                 return new ErrorResponse(Ex);
             }
+        }
+        [HttpGet("sube/{UserID}")]
+        public async Task<IResponse> GetSubeProfil(int UserID)
+        {
+            try
+            {
+
+                List<SubeUserModel> list = await _Context.Database.SqlQueryRaw<SubeUserModel>($"EXEC SP_GETFROMSUBSTATION {UserID}")!.ToListAsync();
+                return new SuccessResponse<List<SubeUserModel>>(list, "Başarılı.");
+
+
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+
+        [HttpPost("UpdatePersonel")]
+        public IResponse UpdateUser([FromBody] PersonalModel personel)
+        {
+            
+            try
+            {
+                     var p = _Context.PERSONAL.FirstOrDefault(x => x.USER_ID == personel.USER_ID);
+                     p.CINSIYET=personel.CINSIYET;
+                     p.SUBE=personel.SUBE;
+                     p.TCKN=personel.TCKN;
+                     p.DOGUM_TARIHI= personel.DOGUM_TARIHI!=null?((DateTime)personel.DOGUM_TARIHI).AddHours(3) : personel.DOGUM_TARIHI;
+                     p.DOGUM_YERI_IL=personel.DOGUM_YERI_IL;
+                     p.DOGUM_YERI_ILCE=personel.DOGUM_YERI_ILCE;
+                     p.OGRENIM_DURUMU=personel.OGRENIM_DURUMU;
+                     p.MEZUN_OKUL=personel.MEZUN_OKUL;
+                     p.MEZUN_BOLUM=personel.MEZUN_BOLUM;
+                     p.MEZUN_YIL=personel.MEZUN_YIL;
+                     p.IKAMETGAH_ADRES=personel.IKAMETGAH_ADRES;
+                     p.IKAMETGAH_IL=personel.IKAMETGAH_IL;
+                     p.IKAMETGAH_ILCE=personel.IKAMETGAH_ILCE;
+                     p.MEDENI_HAL=personel.MEDENI_HAL;
+                     p.ESIN_ADI=personel.ESIN_ADI;
+                     p.ES_CALISMA_DURUMU=personel.ES_CALISMA_DURUMU;
+                     p.ES_CALISMA_FIRMA=personel.ES_CALISMA_FIRMA;
+                     p.ES_UNVANI=personel.ES_UNVANI;
+                     p.COCUK_SAYI=personel.COCUK_SAYI;
+                     p.ARAC_PLAKA=personel.ARAC_PLAKA;
+                     p.EHLIYET_SINIF=personel.EHLIYET_SINIF;
+                     p.CALISILAN_BIRIM=personel.CALISILAN_BIRIM;
+                     p.GOREV=personel.GOREV;
+                     p.ILK_IS_TARIH= personel.ILK_IS_TARIH !=null ? ((DateTime)personel.ILK_IS_TARIH).AddHours(3) : personel.ILK_IS_TARIH; 
+                     p.KAN_GRUP=personel.KAN_GRUP;
+                     p.VARSA_SUREKLI_HAST=personel.VARSA_SUREKLI_HAST;
+                     p.VARSA_ENGEL_DURUM=personel.VARSA_ENGEL_DURUM;
+                     p.VARSA_SUREKLI_KULL_ILAC=personel.VARSA_SUREKLI_KULL_ILAC;
+                     p.ILETISIM_OZEL_TEL=personel.ILETISIM_OZEL_TEL;
+                     p.ILETISIM_SIRKET_TEL = personel.ILETISIM_SIRKET_TEL;
+                     p.ILETISIM_BILGI_MAIL=personel.ILETISIM_BILGI_MAIL;
+                     p.ACIL_DURUM_KISI=personel.ACIL_DURUM_KISI;
+                     p.ACIL_DURUM_KISI_ILETISIM=personel.ACIL_DURUM_KISI_ILETISIM;
+                     p.ACIL_DURUM_KISI2=personel.ACIL_DURUM_KISI2;
+                     p.ACIL_DURUM_KISI_ILETISIM2=personel.ACIL_DURUM_KISI_ILETISIM2;
+                     p.MEVCUT_IS_ILK_TARIH = personel.MEVCUT_IS_ILK_TARIH!=null ? ((DateTime)personel.MEVCUT_IS_ILK_TARIH).AddHours(3) : personel.MEVCUT_IS_ILK_TARIH;
+                     p.MEVCUT_IS_ILK_TARIH2 = personel.MEVCUT_IS_ILK_TARIH2!=null ? ((DateTime)personel.MEVCUT_IS_ILK_TARIH2).AddHours(3) : personel.MEVCUT_IS_ILK_TARIH2;
+                     p.MEVCUT_IS_ILK_TARIH3 = personel.MEVCUT_IS_ILK_TARIH3!=null ? ((DateTime)personel.MEVCUT_IS_ILK_TARIH3).AddHours(3) : personel.MEVCUT_IS_ILK_TARIH3;
+                     p.IS_CIKIS_TARIH= personel.IS_CIKIS_TARIH!=null ? ((DateTime)personel.IS_CIKIS_TARIH).AddHours(3) : personel.IS_CIKIS_TARIH; 
+                     p.IS_CIKIS_TARIH2= personel.IS_CIKIS_TARIH2!=null? ((DateTime)personel.IS_CIKIS_TARIH2).AddHours(3) : personel.IS_CIKIS_TARIH2; 
+                     p.IS_CIKIS_TARIH3= personel.IS_CIKIS_TARIH3!=null? ((DateTime)personel.IS_CIKIS_TARIH3).AddHours(3) : personel.IS_CIKIS_TARIH3; 
+                     p.UPD_USER_ID=personel.UPD_USER_ID;
+                     p.UPD_DATE= ((DateTime)personel.UPD_DATE).AddHours(3);
+                     p.ARAC_MARKA_MODEL = personel.ARAC_MARKA_MODEL;
+                     p.PC_MARKA_MODEL = personel.PC_MARKA_MODEL;
+                     p.PC_SERI_NO = personel.PC_SERI_NO;
+                     p.SIRKET_TEL_MARKA_MODEL = personel.SIRKET_TEL_MARKA_MODEL;
+                     p.SIRKET_TEL_IMEI = personel.SIRKET_TEL_IMEI;
+                     p.DAHILI_NO = personel.DAHILI_NO;
+                     p.DAHILI_MARKA_MODEL = personel.DAHILI_MARKA_MODEL;
+                     p.DAHILI_IPEI_NO = personel.DAHILI_IPEI_NO;
+                     p.ACIL_DURUM_KISI_YAKINLIK = personel.ACIL_DURUM_KISI_YAKINLIK;
+                     p.ACIL_DURUM_KISI2_YAKINLIK = personel.ACIL_DURUM_KISI2_YAKINLIK;
+                _Context.Update(p);
+                var user = _Context.USERS.FirstOrDefault(x => x.USER_ID == p.USER_ID);
+                user!.USER_FIRSTNAME = personel.USER_FIRSTNAME;
+                user!.USER_LASTNAME = personel.USER_LASTNAME;
+
+                var entry = _Context.Update(user);
+                entry.Property(x => x.USER_PASSWORD).IsModified = false;
+                
+                
+                
+                _Context.SaveChanges();
+                return new SuccessResponse<string>("Başarılı", "Başarılı.");
+
+
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+
+
         }
         [Authorize]
         [HttpGet("DateOfStart/{UserID}")]

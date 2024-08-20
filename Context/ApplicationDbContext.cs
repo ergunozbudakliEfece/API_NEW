@@ -17,6 +17,7 @@ namespace SQL_API.Context
         public DbSet<Notification> NOTIFICATIONS { get; set; }
         public DbSet<NotificationTarget> NOTIFICATIONTARGETS { get; set; }
         public DbSet<CityModel> CITIES { get; set; }
+        public DbSet<PersonelModel> PERSONAL { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
