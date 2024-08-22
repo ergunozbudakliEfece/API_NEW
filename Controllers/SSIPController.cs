@@ -24,17 +24,18 @@ namespace SQL_API.Controllers
             _Context = Context;
             _configuration = configuration;
         }
-        [HttpGet]
-        public async Task<IResponse> GetSSIP()
+
+        [HttpGet("{Kapali?}")]
+        public async Task<IResponse> GetSSIP(string? Kapali = null)
         {
             try
             {
                 DataTable table = new DataTable();
 
 
-                string query = @"EXEC SP_SSIPDETAILS ";
+                string query = $@"EXEC SP_SSIPDETAILS '{(Kapali is null ? "" : Kapali)}'";
 
-                string sqldataSource = _configuration.GetConnectionString("Con")!;
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
                 await using (SqlConnection mycon = new SqlConnection(sqldataSource))
                 {
@@ -47,7 +48,7 @@ namespace SQL_API.Controllers
                         mycon.Close();
                     }
                 }
-                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı.");
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
             }
             catch (Exception Ex)
             {
