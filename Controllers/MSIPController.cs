@@ -24,6 +24,38 @@ namespace SQL_API.Controllers
             _Context = Context;
             _configuration = configuration;
         }
+        #region Satış/Müşteri Siparişleri
+        [HttpGet]
+        public async Task<IResponse> GetMSIP()
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = $@"SELECT * FROM EFECE2023..NOVA_VW_DETAYSIZ_MSIP WITH(NOLOCK)";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+        #endregion
 
         /* İhracat Siparişleri */
         [HttpGet("Export/WithoutDetails")]
