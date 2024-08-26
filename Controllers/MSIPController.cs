@@ -26,15 +26,45 @@ namespace SQL_API.Controllers
         }
 
         /* İhracat Siparişleri */
-        [HttpGet("WithoutDetails/E/{Type?}")]
-        public async Task<IResponse> GetWithoutDetailsMSIP(string? Type = null)
+        [HttpGet("Export/WithoutDetails")]
+        public async Task<IResponse> GetExportWithoutDetails()
         {
             try
             {
                 DataTable table = new DataTable();
 
 
-                string query = $@"EXEC SP_MSIPWITHOUTDETAILS '{(Type is null ? "" : Type)}'";
+                string query = $@"EXEC SP_EXPORTMSIP";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+
+        [HttpGet("Export/Details/{OrderNo}")]
+        public async Task<IResponse> GetExportWithDetails(string OrderNo)
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+                string query = $@"EXEC EFECE2023..URETMSIP_DETAY_E '{OrderNo}'";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
