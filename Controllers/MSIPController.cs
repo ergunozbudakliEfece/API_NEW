@@ -15,26 +15,26 @@ namespace SQL_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SSIPController : ControllerBase
+    public class MSIPController : ControllerBase
     {
         private readonly ApplicationDbContext _Context;
         private readonly IConfiguration _configuration;
-        public SSIPController(ApplicationDbContext Context, IConfiguration configuration)
+        public MSIPController(ApplicationDbContext Context, IConfiguration configuration)
         {
             _Context = Context;
             _configuration = configuration;
         }
 
-        /* İthalat Siparişleri */
-        [HttpGet("{Kapali?}")]
-        public async Task<IResponse> GetSSIP(string? Kapali = null)
+        /* İhracat Siparişleri */
+        [HttpGet("WithoutDetails/E/{Type?}")]
+        public async Task<IResponse> GetWithoutDetailsMSIP(string? Type = null)
         {
             try
             {
                 DataTable table = new DataTable();
 
 
-                string query = $@"EXEC SP_SSIPDETAILS '{(Kapali is null ? "" : Kapali)}'";
+                string query = $@"EXEC SP_MSIPWITHOUTDETAILS '{(Type is null ? "" : Type)}'";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
