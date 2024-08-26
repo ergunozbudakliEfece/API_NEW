@@ -33,8 +33,7 @@ namespace SQL_API.Controllers
             {
                 DataTable table = new DataTable();
 
-
-                string query = $@"EXEC SP_SSIPDETAILS '{(Kapali is null ? "" : Kapali)}'";
+                string query = $@"EXEC SP_SSIPDETAILS {(Kapali is null ? "" : $"'{Kapali}'")}";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
