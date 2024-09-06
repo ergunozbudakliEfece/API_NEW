@@ -51,8 +51,8 @@ namespace SQL_API.Controllers
                 return new ErrorResponse(Ex);
             }
         }
-        
-            [HttpGet("privateconditions")]
+
+        [HttpGet("privateconditions")]
         public async Task<IResponse> OzelKosullar()
         {
             try
@@ -89,7 +89,7 @@ namespace SQL_API.Controllers
 
 
 
-            string query1 = @"EXEC UPDATESTOKFIAT '" + fiyatkodu + "','" + fiyat2 + "','" + fiyat3 + "','" + listekodu + "'," + userid;
+            string query1 = @"EXEC SP_UPDATESTOCKPRICES '" + fiyatkodu + "','" + fiyat2 + "','" + fiyat3 + "','" + listekodu + "'," + userid;
 
             string sqldataSource1 = _configuration.GetConnectionString("NOVA_EFECE")!;
             SqlDataReader sqlreader1;
