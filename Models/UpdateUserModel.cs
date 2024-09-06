@@ -10,6 +10,6 @@
         public string USER_MAIL { get; set; }
         public string USER_TYPE { get; set; }
         public int UPD_USER_ID { get; set; }
-        public int ROLE_ID { get; set; }
+        public int? ROLE_ID { get; set; }
     }
 }

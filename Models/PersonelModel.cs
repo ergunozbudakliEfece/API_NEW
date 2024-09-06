@@ -45,8 +45,7 @@ namespace SQL_API.Models
         public string? ACIL_DURUM_KISI_ILETISIM { get; set; }
         public string? ACIL_DURUM_KISI2 { get; set; }
         public string? ACIL_DURUM_KISI_ILETISIM2 { get; set; }
-        [Column(TypeName = "datetime")]
-        public DateTime? KAYIT_TARIH { get; set; }
+       
         [Column(TypeName = "datetime")]
         public DateTime? MEVCUT_IS_ILK_TARIH { get; set; }
         [Column(TypeName = "datetime")]

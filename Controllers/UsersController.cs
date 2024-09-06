@@ -114,7 +114,7 @@ namespace SQL_API.Controllers
             DataTable table = new DataTable();
 
 
-            string query = @"SELECT USER_ID,USER_NAME,USER_FIRSTNAME,USER_LASTNAME,ACTIVE FROM TBL_USERDATA WHERE ACTIVE=1";
+            string query = @"SELECT USER_ID,USER_NAME,USER_FIRSTNAME,USER_LASTNAME,ACTIVE FROM TBL_USERDATA WHERE ACTIVE=1 AND USER_TYPE=0";
 
             string sqldataSource = _configuration.GetConnectionString("Con")!;
             SqlDataReader sqlreader;
@@ -548,7 +548,8 @@ namespace SQL_API.Controllers
             {
                 
                 var active = user.ACTIVE == true ? 1 : 0;
-                var query = $"UPDATE TBL_USERDATA SET USER_NAME='{user.USER_NAME}',USER_FIRSTNAME=N'{user.USER_FIRSTNAME}',USER_LASTNAME=N'{user.USER_LASTNAME}',ACTIVE={active},USER_MAIL='{user.USER_MAIL}',USER_TYPE='{user.USER_TYPE}',UPD_USER_ID={user.UPD_USER_ID},ROLE_ID={user.ROLE_ID} WHERE USER_ID={user.USER_ID}";
+                var role = user.ROLE_ID == null ? "NULL" : user.ROLE_ID.ToString();
+                var query = $"UPDATE TBL_USERDATA SET USER_NAME='{user.USER_NAME}',USER_FIRSTNAME=N'{user.USER_FIRSTNAME}',USER_LASTNAME=N'{user.USER_LASTNAME}',ACTIVE={active},USER_MAIL='{user.USER_MAIL}',USER_TYPE='{user.USER_TYPE}',UPD_USER_ID={user.UPD_USER_ID},ROLE_ID={role} WHERE USER_ID={user.USER_ID}";
                 await _Context.Database.ExecuteSqlRawAsync(query)!;
                 return new SuccessResponse<string>("Başarılı", "Başarılı.");
             }
