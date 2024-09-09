@@ -89,7 +89,7 @@ namespace SQL_API.Controllers
                 DataTable table = new DataTable();
 
 
-                string query = @"SELECT * FROM TBL_PRICESPRIVATEDETAILS WITH(NOLOCK)";
+                string query = @"SELECT * FROM TBL_PRICEPRIVATECONDITION WITH(NOLOCK)";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;

@@ -47,7 +47,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("con")));
-
+builder.Services.AddDbContext<NOVAEFECEDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("NOVA_EFECE")));
 var app = builder.Build();
 
 app.UseSwagger();
