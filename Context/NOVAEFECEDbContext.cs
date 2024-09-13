@@ -7,15 +7,17 @@ namespace SQL_API.Context
     
         public class NOVAEFECEDbContext : DbContext
         {
-            public DbSet<CustomerModel> TBL_CUSTOMERS { get; set; }
-            public NOVAEFECEDbContext(DbContextOptions<NOVAEFECEDbContext> options) : base(options)
+        public DbSet<CustomerModel> TBL_CUSTOMERS { get; set; }
+        public DbSet<SectorModel> TBL_SECTORS { get; set; }
+        public DbSet<QualificationModel> TBL_QUALIFICATION { get; set; }
+        public NOVAEFECEDbContext(DbContextOptions<NOVAEFECEDbContext> options) : base(options)
             {
             }
 
             protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
-
-            }
+            modelBuilder.Entity<CustomerModel>().ToTable(tb => { tb.HasTrigger("CUSTOMERS_UPD"); tb.HasTrigger("CUSTOMERS_INS"); });
+        }
         }
     
 }

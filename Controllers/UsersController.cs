@@ -42,7 +42,7 @@ namespace SQL_API.Controllers
             DataTable table = new DataTable();
 
 
-            string query = @"SELECT USER_ID,USER_NAME FROM TBL_USERDATA WHERE ACTIVE=1";
+            string query = @"SELECT USER_ID,USER_NAME,FULL_NAME=USER_FIRSTNAME+' '+USER_LASTNAME FROM TBL_USERDATA WHERE ACTIVE=1";
 
             string sqldataSource = _configuration.GetConnectionString("Con")!;
             SqlDataReader sqlreader;
