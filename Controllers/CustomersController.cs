@@ -119,6 +119,7 @@ namespace SQL_API.Controllers
                     return new ErrorResponse("Müşteri bulunamadı.");
 
                 Result.MUSTERI_SEKTOR=Request.MUSTERI_SEKTOR;
+                Result.MUSTERI_ADI= Request.MUSTERI_ADI;
                 Result.MUSTERI_IL = Request.MUSTERI_IL;
                 Result.MUSTERI_ILCE = Request.MUSTERI_ILCE;
                 Result.MUSTERI_ADRES = (Request.MUSTERI_ADRES == "" ? null : Request.MUSTERI_ADRES);
@@ -147,7 +148,80 @@ namespace SQL_API.Controllers
                 await _Context.AddAsync(Request);
                 await _Context.SaveChangesAsync();
 
+                return new SuccessResponse<string>("Başarılı.", "Müşteri eklendi.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+        [HttpPost, Route("Meeting/Add")]
+        public async Task<IResponse> AddMeeting(MeetingModel Request)
+        {
+            try
+            {
+                Request.PLANLANAN_TARIH= ((DateTime)Request.PLANLANAN_TARIH!).AddHours(3);
+
+                await _Context.AddAsync(Request);
+                await _Context.SaveChangesAsync();
+
+                return new SuccessResponse<string>("Başarılı.", "Randevu eklendi.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+        [HttpPost, Route("Meeting/Update")]
+        public async Task<IResponse> UpdateCustomer(MeetingModel Request)
+        {
+            try
+            {
+
+                var Result = await _Context.TBL_CUSTOMERCALENDAR.Where(x => x.INCKEY == Request.INCKEY).FirstOrDefaultAsync();
+
+                if (Result is null)
+                    return new ErrorResponse("Müşteri bulunamadı.");
+
+                Result.MUSTERI_ID = Request.MUSTERI_ID;
+                Result.PLANLANAN_TARIH = ((DateTime)Request.PLANLANAN_TARIH!).AddHours(3);
+                Result.RANDEVU_NOTU = Request.RANDEVU_NOTU;
+                Result.DEGISIKLIK_YAPAN_KULLANICI_ID = Request.DEGISIKLIK_YAPAN_KULLANICI_ID;
+                Result.SUREC = Request.SUREC;
+                _Context.Update(Result);
+                await _Context.SaveChangesAsync();
+
                 return new SuccessResponse<string>("Başarılı.", "Müşteri güncellendi.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+        [HttpGet("duration")]
+        public async Task<IResponse> GetDuration()
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = $@"SELECT * FROM TBL_CUSTOMERDURATION WITH(NOLOCK)";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
             }
             catch (Exception Ex)
             {
@@ -168,6 +242,26 @@ namespace SQL_API.Controllers
                 await _Context.SaveChangesAsync();
 
                 return new SuccessResponse<string>("Başarılı.", "Müşteri başarılı bir şekilde silindi.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+        [HttpPost, Route("Meeting/Delete/{INCKEY}")]
+        public async Task<IResponse> DeleteMeeting(int INCKEY)
+        {
+            try
+            {
+
+                var Result = await _Context.TBL_CUSTOMERCALENDAR.Where(x => x.INCKEY == INCKEY).FirstOrDefaultAsync();
+
+                if (Result is null)
+                    return new ErrorResponse("Randevu bulunamadı.");
+                _Context.Remove(Result);
+                await _Context.SaveChangesAsync();
+
+                return new SuccessResponse<string>("Başarılı.", "Randevu başarılı bir şekilde silindi.");
             }
             catch (Exception Ex)
             {
