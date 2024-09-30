@@ -29,5 +29,9 @@ namespace SQL_API.Models
       public DateTime? DUZELTME_TARIHI{get;set;}
       public string? FIRMA_YETKILISI{get;set;}
       public string? PLASIYER{get;set;}
+      [Column(TypeName = "bit")]
+      public bool? SILINDIMI { get; set; }
+      public int ILETISIM_KANALI { get; set; }
+      public string? URUNLER { get; set; }
     }
 }

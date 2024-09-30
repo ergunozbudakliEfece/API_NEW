@@ -127,7 +127,9 @@ namespace SQL_API.Controllers
                 Result.MUSTERI_NOTU = (Request.MUSTERI_NOTU==""?null: Request.MUSTERI_NOTU);
                 Result.MUSTERI_TEL1 = (Request.MUSTERI_TEL1 == "" ? null : Request.MUSTERI_TEL1);
                 Result.MUSTERI_MAIL = (Request.MUSTERI_MAIL == "" ? null : Request.MUSTERI_MAIL);
+                Result.ILETISIM_KANALI = Request.ILETISIM_KANALI;
                 Result.MUSTERI_NITELIK = Request.MUSTERI_NITELIK;
+                Result.URUNLER = Request.URUNLER;
                 _Context.Update(Result);
                 await _Context.SaveChangesAsync();
 
@@ -143,7 +145,7 @@ namespace SQL_API.Controllers
         {
             try
             {
-
+                Request.SILINDIMI = false;
                 
                 await _Context.AddAsync(Request);
                 await _Context.SaveChangesAsync();
@@ -188,6 +190,7 @@ namespace SQL_API.Controllers
                 Result.RANDEVU_NOTU = Request.RANDEVU_NOTU;
                 Result.DEGISIKLIK_YAPAN_KULLANICI_ID = Request.DEGISIKLIK_YAPAN_KULLANICI_ID;
                 Result.SUREC = Request.SUREC;
+                Result.PLASIYER = Request.PLASIYER;
                 _Context.Update(Result);
                 await _Context.SaveChangesAsync();
 
@@ -228,6 +231,66 @@ namespace SQL_API.Controllers
                 return new ErrorResponse(Ex);
             }
         }
+        [HttpGet("contact")]
+        public async Task<IResponse> GetContacts()
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = $@"SELECT * FROM TBL_CONTACTTYPE WITH(NOLOCK)";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+        [HttpGet("products")]
+        public async Task<IResponse> GetProducts()
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = $@"SELECT * FROM TBL_PRODUCTS WITH(NOLOCK)";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
         [HttpPost, Route("Delete/{MusteriID}")]
         public async Task<IResponse> DeleteCustomer(int MusteriID)
         {
@@ -235,10 +298,10 @@ namespace SQL_API.Controllers
             {
 
                 var Result = await _Context.TBL_CUSTOMERS.Where(x => x.MUSTERI_ID == MusteriID).FirstOrDefaultAsync();
-
+                Result!.SILINDIMI = true;
                 if (Result is null)
                 return new ErrorResponse("Müşteri bulunamadı.");
-                _Context.Remove(Result);
+                _Context.Update(Result);
                 await _Context.SaveChangesAsync();
 
                 return new SuccessResponse<string>("Başarılı.", "Müşteri başarılı bir şekilde silindi.");

@@ -19,6 +19,7 @@ using System;
 using SQL_API.Helper;
 using System.Collections;
 using System.Globalization;
+using System.Reflection;
 
 namespace SQL_API.Controllers
 {
@@ -58,6 +59,91 @@ namespace SQL_API.Controllers
                 }
             }
             return JsonConvert.SerializeObject(table);
+        }
+        [HttpGet("plasiyerler")]
+        public string GetPlasiyerler()
+        {
+            DataTable table = new DataTable();
+
+
+            string query = @"SELECT USER_ID,USER_NAME,FULL_NAME=USER_FIRSTNAME+' '+USER_LASTNAME FROM TBL_USERDATA WHERE ACTIVE=1 AND USER_ID IN (SELECT USER_ID FROM TBL_AUTH WHERE MODULE_ID=17)";
+
+            string sqldataSource = _configuration.GetConnectionString("Con")!;
+            SqlDataReader sqlreader;
+            using (SqlConnection mycon = new SqlConnection(sqldataSource))
+            {
+                mycon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                {
+                    sqlreader = myCommand.ExecuteReader();
+                    table.Load(sqlreader);
+                    sqlreader.Close();
+                    mycon.Close();
+                }
+            }
+            return JsonConvert.SerializeObject(table);
+        }
+        [HttpGet("plasiyer/{id}")]
+        public async Task<IResponse> GetPlasiyerlerAsync(int id)
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = $"NOVA_EFECE..SP_PLASIYERAUTH {id}";
+
+                string sqldataSource = _configuration.GetConnectionString("Con")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+
+        }
+        [HttpGet("plasiyer/usernames")]
+        public async Task<IResponse> GetPlasiyerUsernames()
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = $"SELECT USER_ID,USER_NAME,FULL_NAME=USER_FIRSTNAME+' '+USER_LASTNAME FROM TBL_USERDATA WHERE ACTIVE=1";
+
+                string sqldataSource = _configuration.GetConnectionString("Con")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+
         }
         [HttpGet("usernames/All")]
         public string GetAUserByNamesALL()
