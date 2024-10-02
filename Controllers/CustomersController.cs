@@ -64,15 +64,15 @@ namespace SQL_API.Controllers
                 return new ErrorResponse(Ex);
             }
         }
-        [HttpGet("Calendar/{plasiyer?}")]
-        public async Task<IResponse> GetCalendar(int? plasiyer)
+        [HttpGet("Calendar/{plasiyer?}/{type?}")]
+        public async Task<IResponse> GetCalendar(int? plasiyer,string? type)
         {
             try
             {
                 DataTable table = new DataTable();
 
 
-                string query = $@"EXEC SP_CUSTOMERCALENDAR {(plasiyer!=null?plasiyer:"")}";
+                string query = $@"EXEC SP_CUSTOMERCALENDAR {(plasiyer!=null?plasiyer:0)}{(type != null ? ","+type : ",TR")}";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
@@ -201,15 +201,22 @@ namespace SQL_API.Controllers
                 return new ErrorResponse(Ex);
             }
         }
-        [HttpGet("duration")]
-        public async Task<IResponse> GetDuration()
+        [HttpGet("duration/{type}")]
+        public async Task<IResponse> GetDuration(string type)
         {
             try
             {
                 DataTable table = new DataTable();
-
-
-                string query = $@"SELECT * FROM TBL_CUSTOMERDURATION WITH(NOLOCK)";
+                string query;
+                if (type == "TR")
+                {
+                    query = "SELECT ID,NAME,COLOR FROM TBL_CUSTOMERDURATION WITH(NOLOCK)";
+                }
+                else
+                {
+                    query = "SELECT ID,RTRIM(LTRIM(NAME_EN)) AS NAME,COLOR FROM TBL_CUSTOMERDURATION WITH(NOLOCK)";
+                }
+                
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;

@@ -7,5 +7,6 @@ namespace SQL_API.Models
         public string USER_ID { get; set; }
         [Column(TypeName = "DateTime")]
         public DateTime DATE { get; set; }
+        public bool UPDATE { get; set; }
     }
 }

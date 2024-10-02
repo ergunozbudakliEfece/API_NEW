@@ -204,7 +204,7 @@ namespace SQL_API.Controllers
             {
                 DataTable table = new DataTable();
 
-                string query = $@"EXEC SP_ATTENDANCECOND {ConditionRequest.USER_ID}, '{ConditionRequest.DATE.ToString("yyyy-MM-dd HH:mm")}'";
+                string query = $@"EXEC SP_ATTENDANCECOND {ConditionRequest.USER_ID}, '{ConditionRequest.DATE.ToString("yyyy-MM-dd HH:mm")}' ${(ConditionRequest.UPDATE ? ", 1" : "")}";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
