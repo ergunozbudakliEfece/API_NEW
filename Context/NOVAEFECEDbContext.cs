@@ -11,7 +11,7 @@ namespace SQL_API.Context
         public DbSet<QualificationModel> TBL_QUALIFICATION { get; set; }
         public DbSet<MeetingModel> TBL_CUSTOMERCALENDAR { get; set; }
         public DbSet<AttendanceModel> TBL_ATTENDANCE { get; set; }
-
+        public DbSet<SettedPriceModel> SETTED { get; set; }
         public NOVAEFECEDbContext(DbContextOptions<NOVAEFECEDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

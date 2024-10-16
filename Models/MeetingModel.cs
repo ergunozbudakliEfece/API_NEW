@@ -21,5 +21,7 @@ namespace SQL_API.Models
         public DateTime? GERCEKLESEN_TARIH { get; set; }
         public int? PLASIYER { get; set; }
         public string? SUREC { get; set; }
+        public int? ILETISIM_KANALI { get; set; }
+        public string? YURTICIDISI { get; set; }
     }
 }

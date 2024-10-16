@@ -183,6 +183,36 @@ namespace SQL_API.Controllers
             }
             return "BAŞARILI";
         }
+        [HttpGet("Add/{userid}/{moduleid}/{insid}")]
+        public string Add(int userid, int moduleid, int insid)
+        {
+            try
+            {
+
+
+                string query = $"EXEC SP_AUTHONMAIL {userid},{moduleid},{insid}";
+
+                string sqldataSource = _configuration.GetConnectionString("Con")!;
+                SqlDataReader sqlreader;
+                using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = myCommand.ExecuteReader();
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+
+            }
+            catch (System.Exception e)
+            {
+                var m = e.Message;
+                return "BAŞARISIZ";
+            }
+            return "BAŞARILI";
+        }
         [HttpGet("copyrole/{userid}/{id}/{insid}")]
         public string GetCopy(int userid, int id,int insid)
         {

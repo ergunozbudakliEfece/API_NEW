@@ -7,5 +7,6 @@ namespace SQL_API.Models
         [Key]
         public int SECTOR_ID { get; set; }
         public string SECTOR_NAME { get; set; }
+        public string SECTOR_NAME_EN { get; set; }
     }
 }

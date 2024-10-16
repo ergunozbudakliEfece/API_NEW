@@ -33,5 +33,6 @@ namespace SQL_API.Models
       public bool? SILINDIMI { get; set; }
       public int ILETISIM_KANALI { get; set; }
       public string? URUNLER { get; set; }
+      public string? YURTICIDISI { get; set; }
     }
 }

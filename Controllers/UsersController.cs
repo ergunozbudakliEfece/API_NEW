@@ -550,7 +550,7 @@ namespace SQL_API.Controllers
             try
             {
                 var active = user.ACTIVE == true ? 1 : 0;
-                var query = $"INSERT INTO TBL_USERDATA(USER_NAME,USER_FIRSTNAME,USER_LASTNAME,ACTIVE,USER_MAIL,USER_TYPE,INS_USER_ID,ROLE_ID) VALUES('{user.USER_NAME}',N'{user.USER_FIRSTNAME}',N'{user.USER_LASTNAME}',{active},'{user.USER_MAIL}','{user.USER_TYPE}',{user.INS_USER_ID},{user.ROLE_ID})";
+                var query = $"INSERT INTO TBL_USERDATA(USER_NAME,USER_FIRSTNAME,USER_LASTNAME,LOGIN_ACTIVE,ACTIVE,USER_MAIL,USER_TYPE,INS_USER_ID,ROLE_ID) VALUES('{user.USER_NAME}',N'{user.USER_FIRSTNAME}',N'{user.USER_LASTNAME}',0,{active},'{user.USER_MAIL}','{user.USER_TYPE}',{user.INS_USER_ID},{user.ROLE_ID})";
                     await _Context.Database.ExecuteSqlRawAsync(query)!;
                 var newuser= await _Context.USERS.FirstOrDefaultAsync(x => x.USER_NAME == user.USER_NAME);
                 string Token = AESEncryption.Encrypt($"{newuser!.USER_ID};{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}");

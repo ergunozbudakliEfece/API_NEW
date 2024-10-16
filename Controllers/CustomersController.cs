@@ -21,15 +21,45 @@ namespace SQL_API.Controllers
             _Context = Context;
             _configuration = configuration;
         }
-        [HttpGet]
-        public async Task<IResponse> GetCustomers()
+        [HttpGet("{type}")]
+        public async Task<IResponse> GetCustomers(string? type)
         {
             try
             {
                 DataTable table = new DataTable();
 
 
-                string query = $@"EXEC SP_CUSTOMERS";
+                string query = $@"EXEC SP_CUSTOMERS {type}";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+        [HttpGet("exp/{type}")]
+        public async Task<IResponse> GetCustomersExp(string? type)
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = $@"EXEC SP_CUSTOMERSEXP {type}";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
@@ -73,6 +103,36 @@ namespace SQL_API.Controllers
 
 
                 string query = $@"EXEC SP_CUSTOMERCALENDAR {(plasiyer!=null?plasiyer:0)}{(type != null ? ","+type : ",TR")}";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+        [HttpGet("exp/Calendar/{plasiyer?}/{type?}")]
+        public async Task<IResponse> GetCalendarExp(int? plasiyer, string? type)
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = $@"EXEC SP_CUSTOMERCALENDAREXP {(plasiyer != null ? plasiyer : 0)}{(type != null ? "," + type : ",TR")}";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
@@ -146,7 +206,24 @@ namespace SQL_API.Controllers
             try
             {
                 Request.SILINDIMI = false;
-                
+                Request.YURTICIDISI = "1";
+                await _Context.AddAsync(Request);
+                await _Context.SaveChangesAsync();
+
+                return new SuccessResponse<string>("Başarılı.", "Müşteri eklendi.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+        [HttpPost, Route("exp/Add")]
+        public async Task<IResponse> AddCustomerExp(CustomerModel Request)
+        {
+            try
+            {
+                Request.SILINDIMI = false;
+                Request.YURTICIDISI = "2";
                 await _Context.AddAsync(Request);
                 await _Context.SaveChangesAsync();
 
@@ -163,7 +240,24 @@ namespace SQL_API.Controllers
             try
             {
                 Request.PLANLANAN_TARIH= ((DateTime)Request.PLANLANAN_TARIH!).AddHours(3);
+                Request.YURTICIDISI = "1";
+                await _Context.AddAsync(Request);
+                await _Context.SaveChangesAsync();
 
+                return new SuccessResponse<string>("Başarılı.", "Randevu eklendi.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+        [HttpPost, Route("exp/Meeting/Add")]
+        public async Task<IResponse> AddMeetingExp(MeetingModel Request)
+        {
+            try
+            {
+                Request.PLANLANAN_TARIH = ((DateTime)Request.PLANLANAN_TARIH!).AddHours(3);
+                Request.YURTICIDISI = "2";
                 await _Context.AddAsync(Request);
                 await _Context.SaveChangesAsync();
 
@@ -191,6 +285,7 @@ namespace SQL_API.Controllers
                 Result.DEGISIKLIK_YAPAN_KULLANICI_ID = Request.DEGISIKLIK_YAPAN_KULLANICI_ID;
                 Result.SUREC = Request.SUREC;
                 Result.PLASIYER = Request.PLASIYER;
+                Result.ILETISIM_KANALI = Request.ILETISIM_KANALI;
                 _Context.Update(Result);
                 await _Context.SaveChangesAsync();
 
@@ -238,15 +333,16 @@ namespace SQL_API.Controllers
                 return new ErrorResponse(Ex);
             }
         }
-        [HttpGet("contact")]
-        public async Task<IResponse> GetContacts()
+        [HttpGet("contact/{type}")]
+        public async Task<IResponse> GetContacts(string type)
         {
             try
             {
                 DataTable table = new DataTable();
 
+                string query;
 
-                string query = $@"SELECT * FROM TBL_CONTACTTYPE WITH(NOLOCK)";
+                query = (type =="TR"? @"SELECT ID,NAME FROM TBL_CONTACTTYPE WITH(NOLOCK)" :  @"SELECT ID,NAME_EN AS NAME FROM TBL_CONTACTTYPE WITH(NOLOCK)");
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
@@ -276,7 +372,7 @@ namespace SQL_API.Controllers
                 DataTable table = new DataTable();
 
 
-                string query = $@"SELECT * FROM TBL_PRODUCTS WITH(NOLOCK)";
+                string query = @"SELECT * FROM TBL_PRODUCTS WITH(NOLOCK)";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;

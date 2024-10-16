@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SQL_API.Context;
 using SQL_API.Wrappers.Abstract;
@@ -16,10 +17,12 @@ namespace SQL_API.Controllers
     {
         private readonly ApplicationDbContext _Context;
         private readonly IConfiguration _configuration;
-        public PricesController(ApplicationDbContext Context, IConfiguration configuration)
+        private readonly NOVAEFECEDbContext _efeceDB;
+        public PricesController(ApplicationDbContext Context, IConfiguration configuration, NOVAEFECEDbContext efeceDB)
         {
             _Context = Context;
             _configuration = configuration;
+            _efeceDB = efeceDB;
         }
         [HttpGet("conditions")]
         public async Task<IResponse> FiyatDurum()
@@ -29,7 +32,7 @@ namespace SQL_API.Controllers
                 DataTable table = new DataTable();
 
 
-                string query = $@"EXEC SP_PRICECONDITION";
+                string query = @"EXEC SP_PRICECONDITION";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
@@ -138,5 +141,19 @@ namespace SQL_API.Controllers
                 return new ErrorResponse(Ex);
             }
         }
+        [HttpGet("setted")]
+        public async Task<IResponse> GetSetted()
+        {
+            try
+            {
+                var data=await _efeceDB.SETTED.ToListAsync();
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(data), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+
     }
 }

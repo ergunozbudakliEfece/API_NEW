@@ -29,7 +29,37 @@ namespace SQL_API.Controllers
                 DataTable table = new DataTable();
 
 
-                string query = $@"EXEC SP_STOCKS";
+                string query = @"EXEC SP_STOCKS";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+        [HttpGet("deger")]
+        public async Task<IResponse> GetDeger()
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = @"EXEC SP_STOKDEGER";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
@@ -59,7 +89,7 @@ namespace SQL_API.Controllers
                 DataTable table = new DataTable();
 
 
-                string query = $@"SP_LAST3IMPORTEXPORT";
+                string query = @"SP_LAST3IMPORTEXPORT";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
