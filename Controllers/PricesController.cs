@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SQL_API.Context;
+using SQL_API.Models;
 using SQL_API.Wrappers.Abstract;
 using SQL_API.Wrappers.Concrete;
 using System.Collections;
@@ -23,6 +24,31 @@ namespace SQL_API.Controllers
             _Context = Context;
             _configuration = configuration;
             _efeceDB = efeceDB;
+        }
+        [HttpPost]
+        public IActionResult Create(List<FiyatModel> item)
+        {
+
+            using (SqlConnection connection = new SqlConnection(
+           _configuration.GetConnectionString("NOVA_EFECE")!))
+            {
+                SqlCommand command = new SqlCommand("DELETE FROM TBL_PRICEORDER", connection);
+                command.Connection.Open();
+                command.ExecuteNonQuery();
+                command.Connection.Close();
+                for (int i = 0; i < item.Count(); i++)
+                {
+                    SqlCommand command1 = new SqlCommand("INSERT INTO TBL_PRICEORDER (SIRA_NO,FIYATKODU) VALUES(" + item[i].SIRA_NO + ",'" + item[i].FIYATKODU + "')", connection);
+                    command1.Connection.Open();
+                    command1.ExecuteNonQuery();
+                    command1.Connection.Close();
+
+                }
+            }
+
+
+
+            return new NoContentResult();
         }
         [HttpGet("conditions")]
         public async Task<IResponse> FiyatDurum()

@@ -168,6 +168,29 @@ namespace SQL_API.Controllers
             }
             return JsonConvert.SerializeObject(table);
         }
+        [HttpGet("usernames/Actives")]
+        public string GetAUserByNamesActives()
+        {
+            DataTable table = new DataTable();
+
+
+            string query = @"SELECT UD.USER_ID,USER_NAME,NAME FROM TBL_USERDATA UD WITH(NOLOCK) LEFT JOIN TBL_ROLESDETAILS RD WITH(NOLOCK) ON RD.ID=UD.ROLE_ID WHERE LOGIN_ACTIVE=1";
+
+            string sqldataSource = _configuration.GetConnectionString("Con")!;
+            SqlDataReader sqlreader;
+            using (SqlConnection mycon = new SqlConnection(sqldataSource))
+            {
+                mycon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                {
+                    sqlreader = myCommand.ExecuteReader();
+                    table.Load(sqlreader);
+                    sqlreader.Close();
+                    mycon.Close();
+                }
+            }
+            return JsonConvert.SerializeObject(table);
+        }
         [HttpGet("exec/{name}/{password}")]
         public string UserExec(string name, string password)
         {
@@ -200,7 +223,7 @@ namespace SQL_API.Controllers
             DataTable table = new DataTable();
 
 
-            string query = @"SELECT USER_ID,USER_NAME,USER_FIRSTNAME,USER_LASTNAME,ACTIVE FROM TBL_USERDATA WHERE ACTIVE=1 AND USER_TYPE=0";
+            string query = @"SELECT USER_ID,USER_NAME,USER_FIRSTNAME,USER_LASTNAME,LOGIN_ACTIVE AS ACTIVE FROM TBL_USERDATA WHERE LOGIN_ACTIVE=1 AND USER_TYPE=0";
 
             string sqldataSource = _configuration.GetConnectionString("Con")!;
             SqlDataReader sqlreader;
