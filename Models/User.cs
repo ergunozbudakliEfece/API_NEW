@@ -13,6 +13,7 @@ namespace SQL_API.Models
         public string? USER_FIRSTNAME { get; set; }
         public string? USER_LASTNAME { get; set; }
         public bool ACTIVE { get; set; }
+        public bool LOGIN_ACTIVE { get; set; }
         public string? USER_MAIL { get; set; }
         public char USER_TYPE { get; set; }
         public int LOGIN_LIMIT { get; set; }

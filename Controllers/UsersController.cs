@@ -174,7 +174,7 @@ namespace SQL_API.Controllers
             DataTable table = new DataTable();
 
 
-            string query = @"SELECT UD.USER_ID,USER_NAME,NAME FROM TBL_USERDATA UD WITH(NOLOCK) LEFT JOIN TBL_ROLESDETAILS RD WITH(NOLOCK) ON RD.ID=UD.ROLE_ID WHERE LOGIN_ACTIVE=1";
+            string query = @"SELECT UD.USER_ID,USER_NAME,NAME FROM TBL_USERDATA UD WITH(NOLOCK) LEFT JOIN TBL_ROLESDETAILS RD WITH(NOLOCK) ON RD.ID=UD.ROLE_ID WHERE ACTIVE=1";
 
             string sqldataSource = _configuration.GetConnectionString("Con")!;
             SqlDataReader sqlreader;
@@ -302,7 +302,7 @@ namespace SQL_API.Controllers
                 if (UserResult is null)
                     return new ErrorResponse("Kullanıcı bulunamadı.");
 
-                UserResult.ACTIVE = true;
+                UserResult.LOGIN_ACTIVE = true;
                 UserResult.LOGIN_LIMIT = 5;
                 LinkResult!.SITUATION = false;
                 _Context.Database.ExecuteSqlRaw($"Update TBL_USERDATA SET ACTIVE=1,LOGIN_LIMIT=5 WHERE USER_ID={Request.USER_ID}");
@@ -339,6 +339,23 @@ namespace SQL_API.Controllers
             try
             {
                 User UserResult = await _Context.USERS.Where(x => x.USER_ID == UserID).FirstOrDefaultAsync();
+
+                if (UserResult is null)
+                    return new ErrorResponse("Kullanıcı bulunamadı.");
+
+                return new SuccessResponse<User>(UserResult, "Kullanıcı bulundu.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+        [HttpGet("GetByUsername/{UserName}")]
+        public async Task<IResponse> GetByUsername(string UserName)
+        {
+            try
+            {
+                User UserResult = await _Context.USERS.Where(x => x.USER_NAME == UserName).FirstOrDefaultAsync();
 
                 if (UserResult is null)
                     return new ErrorResponse("Kullanıcı bulunamadı.");
@@ -573,7 +590,8 @@ namespace SQL_API.Controllers
             try
             {
                 var active = user.ACTIVE == true ? 1 : 0;
-                var query = $"INSERT INTO TBL_USERDATA(USER_NAME,USER_FIRSTNAME,USER_LASTNAME,LOGIN_ACTIVE,ACTIVE,USER_MAIL,USER_TYPE,INS_USER_ID,ROLE_ID) VALUES('{user.USER_NAME}',N'{user.USER_FIRSTNAME}',N'{user.USER_LASTNAME}',0,{active},'{user.USER_MAIL}','{user.USER_TYPE}',{user.INS_USER_ID},{user.ROLE_ID})";
+                var LOGIN_ACTIVE = user.LOGIN_ACTIVE == true ? 1 : 0;
+                var query = $"INSERT INTO TBL_USERDATA(USER_NAME,USER_FIRSTNAME,USER_LASTNAME,LOGIN_ACTIVE,ACTIVE,USER_MAIL,USER_TYPE,INS_USER_ID,ROLE_ID) VALUES('{user.USER_NAME}',N'{user.USER_FIRSTNAME}',N'{user.USER_LASTNAME}',{LOGIN_ACTIVE},{active},'{user.USER_MAIL}','{user.USER_TYPE}',{user.INS_USER_ID},{user.ROLE_ID})";
                     await _Context.Database.ExecuteSqlRawAsync(query)!;
                 var newuser= await _Context.USERS.FirstOrDefaultAsync(x => x.USER_NAME == user.USER_NAME);
                 string Token = AESEncryption.Encrypt($"{newuser!.USER_ID};{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}");
@@ -657,8 +675,9 @@ namespace SQL_API.Controllers
             {
                 
                 var active = user.ACTIVE == true ? 1 : 0;
+                var LOGIN_ACTIVE = user.LOGIN_ACTIVE == true ? 1 : 0;
                 var role = user.ROLE_ID == null ? "NULL" : user.ROLE_ID.ToString();
-                var query = $"UPDATE TBL_USERDATA SET USER_NAME='{user.USER_NAME}',USER_FIRSTNAME=N'{user.USER_FIRSTNAME}',USER_LASTNAME=N'{user.USER_LASTNAME}',ACTIVE={active},USER_MAIL='{user.USER_MAIL}',USER_TYPE='{user.USER_TYPE}',UPD_USER_ID={user.UPD_USER_ID},ROLE_ID={role} WHERE USER_ID={user.USER_ID}";
+                var query = $"UPDATE TBL_USERDATA SET USER_NAME='{user.USER_NAME}',USER_FIRSTNAME=N'{user.USER_FIRSTNAME}',USER_LASTNAME=N'{user.USER_LASTNAME}',ACTIVE={active},LOGIN_ACTIVE={LOGIN_ACTIVE},USER_MAIL='{user.USER_MAIL}',USER_TYPE='{user.USER_TYPE}',UPD_USER_ID={user.UPD_USER_ID},ROLE_ID={role} WHERE USER_ID={user.USER_ID}";
                 await _Context.Database.ExecuteSqlRawAsync(query)!;
                 return new SuccessResponse<string>("Başarılı", "Başarılı.");
             }
