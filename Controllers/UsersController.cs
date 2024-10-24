@@ -37,6 +37,42 @@ namespace SQL_API.Controllers
             _Context = Context;
             EmailService = MailService;
         }
+        [HttpGet("SalesPersons/{TYPE}")]
+        public async Task<IResponse> GetSalesPersonByType(int TYPE)
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+                string query = @$"SELECT
+                            SP.USER_ID,
+                            (UD.USER_FIRSTNAME + ' ' + UD.USER_LASTNAME) AS FULL_NAME
+                        FROM
+                        NOVA_EFECE..TBL_CRMSALESPEOPLE AS SP WITH(NOLOCK) INNER JOIN
+                        NOVA_YENI..TBL_USERDATA UD WITH(NOLOCK) ON SP.USER_ID=UD.USER_ID
+                        WHERE SP.TYPE={TYPE}";
+
+                string sqldataSource = _configuration.GetConnectionString("Con")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+
+        }
         [HttpGet("usernames")]
         public string GetAUserByNames()
         {

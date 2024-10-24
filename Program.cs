@@ -23,7 +23,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("MyAllowSpecificOrigins",
                           policy =>
                           {
-                              policy.SetIsOriginAllowed(origin => new Uri(origin).Host == "192.168.2.168" || new Uri(origin).Host == "192.168.2.13"|| new Uri(origin).Host == "localhost"|| new Uri(origin).Host == "192.168.2.13:86")
+                              policy.SetIsOriginAllowed(origin => new Uri(origin).Host == "192.168.2.168" || new Uri(origin).Host == "192.168.2.13"|| new Uri(origin).Host == "localhost" || new Uri(origin).Host == "nova.efece.com")
                                                   .AllowAnyHeader()
                                                   .AllowAnyMethod();
                           });

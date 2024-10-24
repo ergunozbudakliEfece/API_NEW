@@ -23,14 +23,14 @@ namespace SQL_API.Controllers
             _context = Context;
         }
 
-        [HttpGet("{UserID}")]
-        public async Task<IResponse> GetAttendance(int UserID)
+        [HttpGet("{UserID}/{IP}")]
+        public async Task<IResponse> GetAttendance(int UserID,string IP)
         {
             try
             {
                 DataTable table = new DataTable();
 
-                string query = $@"EXEC SP_ATTENDANCE {UserID}";
+                string query = $"EXEC SP_ATTENDANCE {UserID},'{IP}'";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
