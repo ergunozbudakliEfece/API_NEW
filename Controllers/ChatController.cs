@@ -37,7 +37,7 @@ namespace SQL_API.Controllers
         [HttpGet("allmychat/{receiverid}")]
         public async Task<IEnumerable> AllChat(string receiverid)
         {
-            var list = _Context.Database.SqlQueryRaw<Model>($"SELECT SENDER_ID FROM TBL_CHAT WHERE ((SENDER_ID={receiverid} OR RECEIVER_ID={receiverid}) AND SENDER_ID<>{receiverid}) AND SHOWID={receiverid} UNION SELECT RECEIVER_ID FROM TBL_CHAT WHERE ((SENDER_ID={receiverid} OR RECEIVER_ID={receiverid}) AND RECEIVER_ID<>10002) AND SHOWID={receiverid}");
+            var list = _Context.Database.SqlQueryRaw<Model>($"SELECT SENDER_ID FROM TBL_CHAT WHERE ((SENDER_ID={receiverid} OR RECEIVER_ID={receiverid}) AND SENDER_ID<>{receiverid}) AND SHOWID={receiverid} UNION SELECT RECEIVER_ID FROM TBL_CHAT WHERE ((SENDER_ID={receiverid} OR RECEIVER_ID={receiverid}) AND RECEIVER_ID<>{receiverid}) AND SHOWID={receiverid}");
             var listShowId=new List<string>();
             foreach (var x in list)
             {

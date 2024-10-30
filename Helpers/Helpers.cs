@@ -62,7 +62,8 @@ namespace SQL_API.Helper
             var credential=new SigningCredentials(securityKey,SecurityAlgorithms.HmacSha256);
             var claim = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier,user.USER_NAME!)
+                new Claim(ClaimTypes.NameIdentifier,user.USER_NAME!),
+                new Claim("USERID",user.USER_ID.ToString())
             };
             var token=new JwtSecurityToken(_jwtOptions.Issuer,_jwtOptions.Audience,claim,expires:DateTime.Now.AddHours(6),signingCredentials:credential);
             return new JwtSecurityTokenHandler().WriteToken(token);
