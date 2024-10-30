@@ -733,7 +733,7 @@ namespace SQL_API.Controllers
 					EmailService.SendEmail(PasswordMail);
 				}
 
-                return new SuccessResponse<string>("Eklenen Kullanıcı", "Başarılı.");
+                return new SuccessResponse<string>(newuser.USER_ID.ToString(), "Başarılı.");
                 
                
             }
