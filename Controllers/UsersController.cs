@@ -96,6 +96,29 @@ namespace SQL_API.Controllers
             }
             return JsonConvert.SerializeObject(table);
         }
+        [HttpGet("lastActivity")]
+        public string LastActivityTime()
+        {
+            DataTable table = new DataTable();
+
+
+            string query = @"EXEC SP_LASTACTIVETIME";
+
+            string sqldataSource = _configuration.GetConnectionString("Con")!;
+            SqlDataReader sqlreader;
+            using (SqlConnection mycon = new SqlConnection(sqldataSource))
+            {
+                mycon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                {
+                    sqlreader = myCommand.ExecuteReader();
+                    table.Load(sqlreader);
+                    sqlreader.Close();
+                    mycon.Close();
+                }
+            }
+            return JsonConvert.SerializeObject(table);
+        }
         [HttpGet("plasiyerler")]
         public string GetPlasiyerler()
         {
@@ -284,7 +307,7 @@ namespace SQL_API.Controllers
             DataTable table = new DataTable();
 
 
-            string query = @"SELECT USER_ID,USER_NAME,USER_FIRSTNAME,USER_LASTNAME,LOGIN_ACTIVE AS ACTIVE FROM TBL_USERDATA WHERE LOGIN_ACTIVE=1 AND USER_TYPE=0";
+            string query = @"SELECT * FROM (SELECT USER_ID,USER_NAME,USER_FIRSTNAME,USER_LASTNAME,LOGIN_ACTIVE AS ACTIVE,LASTTIME=(SELECT MAX(LAST_ACTIVITY_DATE) FROM TBL_LOGIN TL WHERE TL.USER_ID=UD.USER_ID GROUP BY TL.USER_ID) FROM TBL_USERDATA UD WHERE LOGIN_ACTIVE=1 AND USER_TYPE=0)Q ORDER BY LASTTIME DESC,USER_FIRSTNAME";
 
             string sqldataSource = _configuration.GetConnectionString("Con")!;
             SqlDataReader sqlreader;
