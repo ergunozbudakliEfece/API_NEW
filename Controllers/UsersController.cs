@@ -252,7 +252,32 @@ namespace SQL_API.Controllers
 
             return JsonConvert.SerializeObject(table);
         }
-        [HttpGet("active")]
+		[HttpGet("actives")]
+		public string GetAllActivesUsers()
+		{
+
+			DataTable table = new DataTable();
+
+
+			string query = @"SELECT USER_ID,USER_NAME,USER_FIRSTNAME,USER_LASTNAME,LOGIN_ACTIVE AS ACTIVE FROM TBL_USERDATA WHERE ACTIVE=1 AND USER_TYPE=0";
+
+			string sqldataSource = _configuration.GetConnectionString("Con")!;
+			SqlDataReader sqlreader;
+			using (SqlConnection mycon = new SqlConnection(sqldataSource))
+			{
+				mycon.Open();
+				using (SqlCommand myCommand = new SqlCommand(query, mycon))
+				{
+					sqlreader = myCommand.ExecuteReader();
+					table.Load(sqlreader);
+					sqlreader.Close();
+					mycon.Close();
+				}
+			}
+
+			return JsonConvert.SerializeObject(table);
+		}
+		[HttpGet("active")]
         public string GetAllActiveUsers()
         {
 
@@ -631,7 +656,7 @@ namespace SQL_API.Controllers
                     await _Context.Database.ExecuteSqlRawAsync(query)!;
                 var newuser= await _Context.USERS.FirstOrDefaultAsync(x => x.USER_NAME == user.USER_NAME);
                 string Token = AESEncryption.Encrypt($"{newuser!.USER_ID};{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}");
-                string Url = $"{Request.Scheme}://192.168.2.13:86/UpdatePassword?Token={Token}";
+                string Url = $"{Request.Scheme}://192.168.2.13/UpdatePassword?Token={Token}";
                 try
                 {
                     Link NewLink = new()
@@ -654,16 +679,6 @@ namespace SQL_API.Controllers
                 {
                     return new ErrorResponse(Ex);
                 }
-                Email PasswordMail = new Email()
-                {
-                    From = "sistem@efecegalvaniz.com",
-                    To = (user.USER_MAIL==null||user.USER_MAIL==""? "sistem@efecegalvaniz.com":user.USER_MAIL),
-                    Subject = "NOVA | Şifre Belirleme",
-                    Body = "Merhaba " + newuser.USER_FIRSTNAME + ",</br></br>Nova üzerinde kullanıcınız oluşturulmuştur. Aşağıdakı butona tıklayarak şifrenizi belirleyebilirsiniz.</br></br>" +
-                         "<div><!--[if mso]><v:roundrect xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:w=\"urn:schemas-microsoft-com:office:word\" href=\"" + Url + "\"style=\"height:35px;v-text-anchor:middle;width:200px;\" arcsize=\"71.42857142857143%\" stroke=\"f\" fillcolor=\"#0052A3\"><w:anchorlock/><center><![endif]--><a href=\"\"+Url+\"\" style=\"background-color:#0052A3;border-radius:25px;color:#e4e4e4;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:bold;line-height:35px;text-align:center;text-decoration:none;width:200px;-webkit-text-size-adjust:none;\">Şifremi Oluştur</a><!--[if mso]></center></v:roundrect><![endif]--></div></br>" +
-                         "İyi çalışmalar dileriz.</br></br>",
-                    Signature = MailSignature.SYSTEM_SIGNATURE
-                };
                 query = @"SP_COPYAUTHROLE " + newuser!.USER_ID + "," + user.ROLE_ID + "," + user.INS_USER_ID;
 
                 string sqldataSource = _configuration.GetConnectionString("Con")!;
@@ -679,9 +694,23 @@ namespace SQL_API.Controllers
                     }
                 }
 
-                EmailService.SendEmail(PasswordMail);
+                if (user.LOGIN_ACTIVE)
+                {
+					Email PasswordMail = new Email()
+					{
+						From = "sistem@efecegalvaniz.com",
+						To = (user.USER_MAIL == null || user.USER_MAIL == "" ? "sistem@efecegalvaniz.com" : user.USER_MAIL),
+						Subject = "NOVA | HOŞGELDİNİZ",
+						Body = "Merhaba " + newuser.USER_FIRSTNAME + " " + newuser.USER_LASTNAME + ",</br></br>Nova, Efece'deki çalışma hayatınızda işlerinizi kolaylaştırmak ve verimliliğinizi artırmak üzere İş ve Süreç Geliştirme Departmanı tarafından geliştirilmiş web tabanlı bir uygulamadır.</br></br>Nova uygulamasına giriş yapabileceğiniz kullanıcı oluşturulmuştur. Aşağıdaki butona tıklayarak şifrenizi belirleyebilirsiniz.</br></br>Şifrenizi oluşturduktan sonra uygulama giriş ekranına yönlendirileceksiniz.</br></br>" +
+						 "<div><!--[if mso]><v:roundrect xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:w=\"urn:schemas-microsoft-com:office:word\" href=\"" + Url + "\"style=\"height:35px;v-text-anchor:middle;width:200px;\" arcsize=\"71.42857142857143%\" stroke=\"f\" fillcolor=\"#0052A3\"><w:anchorlock/><center><![endif]--><a href=\"\"+Url+\"\" style=\"background-color:#0052A3;border-radius:25px;color:#e4e4e4;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:bold;line-height:35px;text-align:center;text-decoration:none;width:200px;-webkit-text-size-adjust:none;\">Şifre Oluştur</a><!--[if mso]></center></v:roundrect><![endif]--></div><br>Her türlü görüş, öneri veya sorunlarınız için "+ "<a href=\"mailto:surecgelistirme@efecegalvaniz.com\">İş ve Süreç Geliştirme Departmanı</a>" + " ile iletişime geçebilirsiniz.</br><br>" +
+						 "İyi çalışmalar dileriz.</br></br>",
+						Signature = MailSignature.SYSTEM_SIGNATURE
+					};
 
-                return new SuccessResponse<string>("Başarılı", "Başarılı.");
+					EmailService.SendEmail(PasswordMail);
+				}
+
+                return new SuccessResponse<string>("Eklenen Kullanıcı", "Başarılı.");
                 
                
             }
