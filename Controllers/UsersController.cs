@@ -325,6 +325,31 @@ namespace SQL_API.Controllers
 
             return JsonConvert.SerializeObject(table);
         }
+        [HttpGet("chatyetkisiz")]
+        public string GetYetkisiz()
+        {
+
+            DataTable table = new DataTable();
+
+
+            string query = @"SELECT * FROM TBL_USERDATA WITH(NOLOCK) WHERE LOGIN_ACTIVE=1 AND USER_ID NOT IN (SELECT USER_ID FROM TBL_PRIVATEAUTH WHERE MODULE_ID=9)";
+
+            string sqldataSource = _configuration.GetConnectionString("Con")!;
+            SqlDataReader sqlreader;
+            using (SqlConnection mycon = new SqlConnection(sqldataSource))
+            {
+                mycon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                {
+                    sqlreader = myCommand.ExecuteReader();
+                    table.Load(sqlreader);
+                    sqlreader.Close();
+                    mycon.Close();
+                }
+            }
+
+            return JsonConvert.SerializeObject(table);
+        }
         [HttpGet("Personal/{PersonaID}")]
         public string GetPersonal(int PersonaID)
         {
