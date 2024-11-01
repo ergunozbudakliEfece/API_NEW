@@ -20,6 +20,8 @@ using SQL_API.Helper;
 using System.Collections;
 using System.Globalization;
 using System.Reflection;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace SQL_API.Controllers
 {
@@ -515,6 +517,7 @@ namespace SQL_API.Controllers
                 return new ErrorResponse(Ex);
             }
         }
+
         [HttpGet("sube/{UserID}")]
         public async Task<IResponse> GetSubeProfil(int UserID)
         {
@@ -525,6 +528,50 @@ namespace SQL_API.Controllers
                 return new SuccessResponse<List<SubeUserModel>>(list, "Başarılı.");
 
 
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+
+        [Authorize, HttpGet("Employees/{UserID}/{Tumu}")]
+        public async Task<IResponse> GetEmployees(int UserID, int Tumu)
+        {
+            try
+            {
+                var Result = "[]";
+
+                if(Tumu == 1) 
+                {
+                    DataTable table = new DataTable();
+
+                    string query = @"SELECT * FROM (SELECT USER_ID,USER_NAME,USER_FIRSTNAME + ' ' +USER_LASTNAME AS NAME,ACTIVE,LASTTIME=(SELECT MAX(LAST_ACTIVITY_DATE) FROM TBL_LOGIN TL WHERE TL.USER_ID=UD.USER_ID GROUP BY TL.USER_ID) FROM TBL_USERDATA UD WHERE USER_TYPE=0)Q";
+
+                    string sqldataSource = _configuration.GetConnectionString("Con")!;
+                    SqlDataReader sqlreader;
+                    using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                    {
+                        mycon.Open();
+                        using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                        {
+                            sqlreader = myCommand.ExecuteReader();
+                            table.Load(sqlreader);
+                            sqlreader.Close();
+                            mycon.Close();
+                        }
+                    }
+
+                    Result = JsonConvert.SerializeObject(table);
+                }
+                else if(Tumu == 0)
+                {
+                    List<SubeUserModel> list = await _Context.Database.SqlQueryRaw<SubeUserModel>($"EXEC SP_GETFROMSUBSTATION {UserID}")!.ToListAsync();
+
+                    Result = JsonConvert.SerializeObject(list);
+                }
+
+                return new SuccessResponse<string>(Result, "Başarılı.");
             }
             catch (Exception Ex)
             {
@@ -748,7 +795,7 @@ namespace SQL_API.Controllers
 					{
 						From = "sistem@efecegalvaniz.com",
 						To = (user.USER_MAIL == null || user.USER_MAIL == "" ? "sistem@efecegalvaniz.com" : user.USER_MAIL),
-						Subject = "NOVA | HOŞGELDİNİZ",
+						Subject = "Nova | Hoşgeldiniz",
 						Body = "Merhaba " + newuser.USER_FIRSTNAME + " " + newuser.USER_LASTNAME + ",</br></br>Nova, Efece'deki çalışma hayatınızda işlerinizi kolaylaştırmak ve verimliliğinizi artırmak üzere İş ve Süreç Geliştirme Departmanı tarafından geliştirilmiş web tabanlı bir uygulamadır.</br></br>Nova uygulamasına giriş yapabileceğiniz kullanıcı oluşturulmuştur. Aşağıdaki butona tıklayarak şifrenizi belirleyebilirsiniz.</br></br>Şifrenizi oluşturduktan sonra uygulama giriş ekranına yönlendirileceksiniz.</br></br>" +
 						 "<div><!--[if mso]><v:roundrect xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:w=\"urn:schemas-microsoft-com:office:word\" href=\"" + Url + "\"style=\"height:35px;v-text-anchor:middle;width:200px;\" arcsize=\"71.42857142857143%\" stroke=\"f\" fillcolor=\"#0052A3\"><w:anchorlock/><center><![endif]--><a href=\"\"+Url+\"\" style=\"background-color:#0052A3;border-radius:25px;color:#e4e4e4;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:bold;line-height:35px;text-align:center;text-decoration:none;width:200px;-webkit-text-size-adjust:none;\">Şifre Oluştur</a><!--[if mso]></center></v:roundrect><![endif]--></div><br>Her türlü görüş, öneri veya sorunlarınız için "+ "<a href=\"mailto:surecgelistirme@efecegalvaniz.com\">İş ve Süreç Geliştirme Departmanı</a>" + " ile iletişime geçebilirsiniz.</br><br>" +
 						 "İyi çalışmalar dileriz.</br></br>",

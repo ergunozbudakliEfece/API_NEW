@@ -4,10 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using SQL_API.Context;
 using SQL_API.Models;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using SQL_API.Wrappers.Concrete;
 using SQL_API.Wrappers.Abstract;
+using SQL_API.Wrappers.Concrete;
 
 namespace SQL_API.Controllers
 {
@@ -24,7 +22,7 @@ namespace SQL_API.Controllers
         }
 
         [HttpGet("{RECEIVER_ID}")]
-        public async Task<IQueryable> GetNotifications(string RECEIVER_ID) 
+        public async Task<IQueryable> GetNotifications(string RECEIVER_ID)
         {
             return _Context.Database.SqlQueryRaw<NotificationQuery>($"SP_NOTIFICATIONS {RECEIVER_ID}");
         }
@@ -56,8 +54,25 @@ namespace SQL_API.Controllers
 
         }
 
+        [HttpGet("CreateNotification/{USER_ID}/{NOTIFICATION_ID}")]
+        public async Task<IResponse> CreateNotification(int USER_ID, int NOTIFICATION_ID)
+        {
+            try
+            {
+                _Context.Database.ExecuteSqlRaw($"SP_NOTIFICATIONTARGETINS {NOTIFICATION_ID},{USER_ID}");
+
+                await _Context.SaveChangesAsync();
+
+                return new SuccessResponse<string>("", "");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+
         [HttpPost("Create")]
-        public async Task<Notification> CreateNotification(NotificationCreateRequest CreateRequest) 
+        public async Task<Notification> CreateNotification(NotificationCreateRequest CreateRequest)
         {
             EntityEntry<Notification> Created = await _Context.NOTIFICATIONS.AddAsync(CreateRequest.Notification);
 
@@ -84,7 +99,7 @@ namespace SQL_API.Controllers
             {
                 _Context.Database.ExecuteSqlRaw($"SP_NOTIFICATIONREAD {Notification.ID},{Notification.RECEIVER_ID}");
             }
-           
+
         }
 
         [HttpDelete("DeleteNotificationFromTarget/{USER_ID}/{NOTIFICATION_ID}")]
@@ -117,7 +132,7 @@ namespace SQL_API.Controllers
         }
 
         [HttpDelete("DeleteAllNotificationFromTarget/{NOTIFICATION_ID}")]
-        public async Task DeleteAllNotificationFromTarget(int NOTIFICATION_ID) 
+        public async Task DeleteAllNotificationFromTarget(int NOTIFICATION_ID)
         {
             Notification Notification = _Context.NOTIFICATIONS.Where(x => x.NOTIFICATION_ID == NOTIFICATION_ID).FirstOrDefault();
             IQueryable<NotificationTarget> Targets = _Context.NOTIFICATIONTARGETS.Where(x => x.NOTIFICATION_ID == NOTIFICATION_ID).AsQueryable();
@@ -138,12 +153,12 @@ namespace SQL_API.Controllers
         [HttpPost("DeleteRangeAllNotificationFromTarget")]
         public async Task DeleteRangeAllNotificationFromTarget(List<int> NOTIFICATIONS)
         {
-            foreach(int NOTIFICATION_ID in NOTIFICATIONS)
+            foreach (int NOTIFICATION_ID in NOTIFICATIONS)
             {
                 Notification Notification = _Context.NOTIFICATIONS.Where(x => x.NOTIFICATION_ID == NOTIFICATION_ID).FirstOrDefault();
                 IQueryable<NotificationTarget> Targets = _Context.NOTIFICATIONTARGETS.Where(x => x.NOTIFICATION_ID == NOTIFICATION_ID).AsQueryable();
 
-                if(Notification is not null)
+                if (Notification is not null)
                 {
                     _Context.NOTIFICATIONS.Remove(Notification);
                 }
