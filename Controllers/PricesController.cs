@@ -80,7 +80,36 @@ namespace SQL_API.Controllers
                 return new ErrorResponse(Ex);
             }
         }
+        [HttpGet("dovizler")]
+        public async Task<IResponse> Dovizler()
+        {
+            try
+            {
+                DataTable table = new DataTable();
 
+
+                string query = @"EXEC SP_GETDOV";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
         [HttpGet("privateconditions")]
         public async Task<IResponse> OzelKosullar()
         {
