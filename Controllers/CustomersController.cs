@@ -214,7 +214,8 @@ namespace SQL_API.Controllers
             }
             catch (Exception Ex)
             {
-                return new ErrorResponse(Ex);
+                string Detail = $"{Ex.Message} {(Ex.InnerException is not null ? $"(Detail: {Ex.InnerException.Message})" : "")}";
+                return new ErrorResponse(Detail);
             }
         }
         [HttpPost, Route("exp/Add")]
@@ -231,7 +232,8 @@ namespace SQL_API.Controllers
             }
             catch (Exception Ex)
             {
-                return new ErrorResponse(Ex);
+                string Detail = $"{Ex.Message} {(Ex.InnerException is not null ? $"(Detail: {Ex.InnerException.Message})" : "")}";
+                return new ErrorResponse(Detail);
             }
         }
         [HttpPost, Route("Meeting/Add")]

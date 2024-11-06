@@ -4,5 +4,6 @@
     {
         public int USER_ID { get; set; }
         public string? NAME { get; set; }
+        public bool ACTIVE { get; set; }
     }
 }
