@@ -51,6 +51,36 @@ namespace SQL_API.Controllers
                 return new ErrorResponse(Ex);
             }
         }
+        [HttpGet("netsiscariler")]
+        public async Task<IResponse> GetCariler()
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = "SELECT * FROM EFECE2023..TBLCASABIT WITH(NOLOCK)";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
         [HttpGet("exp/{type}")]
         public async Task<IResponse> GetCustomersExp(string? type)
         {

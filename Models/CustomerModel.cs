@@ -34,5 +34,6 @@ namespace SQL_API.Models
       public int ILETISIM_KANALI { get; set; }
       public string? URUNLER { get; set; }
       public string? YURTICIDISI { get; set; }
+      public string? NETSIS_CARIKOD { get; set; }
     }
 }

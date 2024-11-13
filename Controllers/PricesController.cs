@@ -174,7 +174,7 @@ namespace SQL_API.Controllers
                 DataTable table = new DataTable();
 
 
-                string query = $@"EXEC SP_PRICES";
+                string query = @"EXEC SP_PRICES";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
