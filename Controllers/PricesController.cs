@@ -9,6 +9,7 @@ using SQL_API.Wrappers.Concrete;
 using System.Collections;
 using System.Data;
 using System.Data.SqlClient;
+using System.Reflection;
 
 namespace SQL_API.Controllers
 {
@@ -49,6 +50,35 @@ namespace SQL_API.Controllers
 
 
             return new NoContentResult();
+        }
+        [HttpPost("insert/{priceCode}")]
+        public async Task<IResponse> Insert(string priceCode)
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = $"DECLARE @max int;SET @max=(SELECT MAX(SIRA_NO)+1 FROM [TBL_PRICEORDER]);INSERT INTO TBL_PRICEORDER VALUES(@max,'{priceCode}');INSERT INTO NOVA_EFECE..TBL_PRICEHISTORY  ([FIYATKODU],[OLCUBR],[FIYATDOVIZTIPI],[FIYAT1],[FIYAT2],[FIYAT3],[FIYAT4],[TARIH],[KAYIT_KULL_ID]) SELECT DISTINCT(FIYATKODU),OLCUBR=1,FIYATDOVIZTIPI,FIYAT1,FIYAT2,FIYAT3,FIYAT4,CASE WHEN DEGISIKTAR IS NULL THEN KAYITTAR ELSE DEGISIKTAR END AS TARIH ,KAYIT_KULL_ID=10001 FROM EFECE2023..TBLSTOKFIAT LEFT OUTER JOIN EFECE2023..TBLSTSABIT ON TBLSTOKFIAT.STOKKODU=TBLSTSABIT.STOK_KODU WHERE FIYATKODU='{priceCode}'";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>("Kayıt başarılı!", "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
         }
         [HttpGet("conditions")]
         public async Task<IResponse> FiyatDurum()
@@ -209,6 +239,106 @@ namespace SQL_API.Controllers
                 return new ErrorResponse(Ex);
             }
         }
+        [HttpGet("aciklama/{fiyatkodu}/{aciklama}")]
+        public IEnumerable UpdateAciklama(string fiyatkodu, string aciklama)
+        {
+            string query = @"SELECT * FROM TBL_PRICEPRIVATECONDITION WHERE FIYATKODU='" + fiyatkodu + "'";
+            List<FiatAciklamaModel> stoklist = null;
+            string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+            SqlDataReader sqlreader;
+            using (SqlConnection mycon = new SqlConnection(sqldataSource))
+            {
+                mycon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                {
+                    sqlreader = myCommand.ExecuteReader();
+                    stoklist = DataReaderMapToList<FiatAciklamaModel>(sqlreader);
 
+                    sqlreader.Close();
+                    mycon.Close();
+                }
+            }
+            string query1 = "";
+            if (stoklist.Count == 0)
+            {
+
+                if (aciklama == "null")
+                {
+                    query1 = @"INSERT INTO TBL_PRICEPRIVATECONDITION VALUES('" + fiyatkodu + "')";
+
+                }
+                else
+                {
+                    query1 = @"INSERT INTO TBL_PRICEPRIVATECONDITION VALUES('" + fiyatkodu + "','" + aciklama + "')";
+                }
+
+                string sqldataSource1 = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader1;
+                using (SqlConnection mycon1 = new SqlConnection(sqldataSource1))
+                {
+                    mycon1.Open();
+                    using (SqlCommand myCommand1 = new SqlCommand(query1, mycon1))
+                    {
+                        sqlreader1 = myCommand1.ExecuteReader();
+                        sqlreader1.Close();
+                        mycon1.Close();
+                    }
+                }
+            }
+            else
+            {
+                if (aciklama == "null")
+                {
+                    query1 = @"UPDATE TBL_PRICEPRIVATECONDITION SET OZELKOSULLAR = NULL WHERE FIYATKODU='" + fiyatkodu + "'";
+
+                }
+                else
+                {
+                    query1 = @"UPDATE TBL_PRICEPRIVATECONDITION SET OZELKOSULLAR='" + aciklama + "' WHERE FIYATKODU='" + fiyatkodu + "'";
+                }
+
+                string sqldataSource1 = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader1;
+                using (SqlConnection mycon1 = new SqlConnection(sqldataSource1))
+                {
+                    mycon1.Open();
+                    using (SqlCommand myCommand1 = new SqlCommand(query1, mycon1))
+                    {
+                        sqlreader1 = myCommand1.ExecuteReader();
+                        sqlreader1.Close();
+                        mycon1.Close();
+                    }
+                }
+            }
+
+
+
+
+
+            return null;
+        }
+        public static List<T> DataReaderMapToList<T>(IDataReader dr)
+        {
+            List<T> list = new List<T>();
+            T obj = default(T);
+            while (dr.Read())
+            {
+                obj = Activator.CreateInstance<T>();
+                foreach (PropertyInfo prop in obj.GetType().GetProperties())
+                {
+                    if (!object.Equals(dr[prop.Name], DBNull.Value))
+                    {
+                        prop.SetValue(obj, dr[prop.Name], null);
+                    }
+                }
+                list.Add(obj);
+            }
+            return list;
+        }
+        public class FiatAciklamaModel
+        {
+            public string FIYATKODU { set; get; }
+            public string OZELKOSULLAR { set; get; }
+        }
     }
 }

@@ -21,7 +21,36 @@ namespace SQL_API.Controllers
             _Context = Context;
             _configuration = configuration;
         }
+        [HttpGet("All")]
+        public async Task<IResponse> GetAllStocks()
+        {
+            try
+            {
+                DataTable table = new DataTable();
 
+
+                string query = @"EXEC SP_GETALLSTOCKS";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
         [HttpGet]
         public async Task<IResponse> GetStocks()
         {   
@@ -170,6 +199,186 @@ namespace SQL_API.Controllers
             catch (Exception Ex)
             {
                 return new ErrorResponse(Ex);
+            }
+
+        }
+        [HttpGet("counting")]
+        public async Task<IResponse> GetStokCounting()
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = $@"SP_STOCKCOUNTING";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+
+        }
+        [HttpGet("countings")]
+        public async Task<IResponse> GetStokCountings()
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = $@"SP_COUNTINGS";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+
+        }
+        [HttpGet("add/countings")]
+        public async Task<IResponse> AddStokCountings(StockCountingModel Request)
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = $@"INSERT INTO TBL_COUNTINGS(STOK_KODU,MIKTAR,MIKTAR2,SAYIM_ID,KAYIT_YAPAN_KUL) VALUES('{Request.STOK_KODU}','{Request.MIKTAR}','{Request.MIKTAR2}',{Request.SAYIM_ID},{Request.KAYIT_KULLANICI_ID})";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>("Başarılı", "Stok başarıyla eklendi.");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+
+        }
+        [HttpPost("update/counting")]
+        public async Task<IResponse> UpdateCounting(CountingModel Request)
+        {
+            try
+            {
+                string query = $@"UPDATE TBL_STOCKCOUNTING SET DEPO={Request.DEPO},GUNCELLEME_KULLANICI_ID={Request.GUNCELLEME_KULLANICI_ID},SAYIM_ADI='{Request.SAYIM_ADI}' WHERE SAYIM_ID={Request.SAYIM_ID}";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+
+                return new SuccessResponse<string>("Başarılı.", "Kayıt başarıyla güncellendi.");
+            }
+            catch (Exception Ex)
+            {
+                string Detail = $"{Ex.Message} {(Ex.InnerException is not null ? $"(Detail: {Ex.InnerException.Message})" : "")}";
+                return new ErrorResponse(Detail);
+            }
+
+        }
+        [HttpPost("add/counting")]
+        public async Task<IResponse> AddCounting(CountingModel Request)
+        {
+            try
+            {
+                string query = $@"INSERT TBL_STOCKCOUNTING(SAYIM_ADI,KAYIT_KULLANICI_ID,DEPO) VALUES('{Request.SAYIM_ADI}','{Request.KAYIT_KULLANICI_ID}','{Request.DEPO}')";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+
+                return new SuccessResponse<string>("Başarılı.", "Kayıt başarılı.");
+            }
+            catch (Exception Ex)
+            {
+                string Detail = $"{Ex.Message} {(Ex.InnerException is not null ? $"(Detail: {Ex.InnerException.Message})" : "")}";
+                return new ErrorResponse(Detail);
+            }
+
+        }
+        [HttpPost("delete/counting/{id}")]
+        public async Task<IResponse> DeleteCounting(int id)
+        {
+            try
+            {
+                string query = $"DELETE FROM TBL_STOCKCOUNTING WHERE SAYIM_ID="+ id;
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+
+                return new SuccessResponse<string>("Başarılı.", "Başarıyla silindi.");
+            }
+            catch (Exception Ex)
+            {
+                string Detail = $"{Ex.Message} {(Ex.InnerException is not null ? $"(Detail: {Ex.InnerException.Message})" : "")}";
+                return new ErrorResponse(Detail);
             }
 
         }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
 using SQL_API.Context;
 using SQL_API.Models;
@@ -59,7 +60,37 @@ namespace SQL_API.Controllers
                 DataTable table = new DataTable();
 
 
-                string query = "SELECT * FROM EFECE2023..TBLCASABIT WITH(NOLOCK)";
+                string query = "SELECT CARI_KOD,CARI_ISIM,CARI_IL,CARI_ILCE FROM EFECE2023..TBLCASABIT WITH(NOLOCK) WHERE LEFT(CARI_KOD,3) IN('120','320')";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+        [HttpGet("musterinetsiscariler")]
+        public async Task<IResponse> GetMusteriCariler()
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = "SELECT * FROM TBL_NETSISCARI WITH(NOLOCK)";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
@@ -241,6 +272,62 @@ namespace SQL_API.Controllers
                 await _Context.SaveChangesAsync();
 
                 return new SuccessResponse<string>("Başarılı.", "Müşteri eklendi.");
+            }
+            catch (Exception Ex)
+            {
+                string Detail = $"{Ex.Message} {(Ex.InnerException is not null ? $"(Detail: {Ex.InnerException.Message})" : "")}";
+                return new ErrorResponse(Detail);
+            }
+        }
+        [HttpPost, Route("Netsis/Add")]
+        public async Task<IResponse> AddNetsisCari(NetsisCariModel Request)
+        {
+            try
+            {
+                string query = $@"INSERT TBL_NETSISCARI VALUES({Request.CUSTOMER_ID},'{Request.NETSIS_CARIKOD}')";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+
+                return new SuccessResponse<string>("Başarılı.", "Cari birleştirildi.");
+            }
+            catch (Exception Ex)
+            {
+                string Detail = $"{Ex.Message} {(Ex.InnerException is not null ? $"(Detail: {Ex.InnerException.Message})" : "")}";
+                return new ErrorResponse(Detail);
+            }
+        }
+        [HttpPost, Route("Netsis/Delete")]
+        public async Task<IResponse> DeleteNetsisCari(NetsisCariModel Request)
+        {
+            try
+            {
+                string query = $@"DELETE FROM TBL_NETSISCARI WHERE NETSIS_CARIKOD='{Request.NETSIS_CARIKOD}'";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+
+                return new SuccessResponse<string>("Başarılı.", "Cari silindi.");
             }
             catch (Exception Ex)
             {
