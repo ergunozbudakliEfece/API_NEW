@@ -92,7 +92,7 @@ namespace SQL_API.Controllers
 
                 foreach (AttendanceCreateRequest CreateRequest in CreateRequests) 
                 {
-                    string query = $@"EXEC SP_ATTENDANCE {CreateRequest.USER_ID}, '{CreateRequest.CHECK_IN_OUT}', '{CreateRequest.DATE.ToString("yyyy-MM-dd HH:mm:ss.fff")}', {CreateRequest.INS_USER_ID} ";
+                    string query = $@"EXEC SP_ATTENDANCE {CreateRequest.USER_ID},'', '{CreateRequest.CHECK_IN_OUT}', '{CreateRequest.DATE.ToString("yyyy-MM-dd HH:mm:ss.fff")}', {CreateRequest.INS_USER_ID} ";
 
                     string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                     SqlDataReader sqlreader;

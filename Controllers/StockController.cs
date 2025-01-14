@@ -233,15 +233,137 @@ namespace SQL_API.Controllers
             }
 
         }
-        [HttpGet("countings")]
-        public async Task<IResponse> GetStokCountings()
+        [HttpPost("addStock/counting")]
+        public async Task<IResponse> AddStokCounting(StockCountingModel Request)
         {
             try
             {
                 DataTable table = new DataTable();
 
 
-                string query = $@"SP_COUNTINGS";
+                string query = $@"INSERT TBL_COUNTINGS(STOK_KODU,MIKTAR,MIKTAR2,SAYIM_ID,KAYIT_YAPAN_KUL) VALUES('{Request.STOK_KODU}','{Request.MIKTAR}','{Request.MIKTAR2}',{Request.SAYIM_ID},{Request.KAYIT_KULLANICI_ID})";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>("Stok başarıyla eklendi.", "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+
+        }
+        [HttpPost("updStock/counting")]
+        public async Task<IResponse> UpdStokCounting(StockCountingModel Request)
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = $@"UPDATE TBL_COUNTINGS SET MIKTAR='{Request.MIKTAR}', MIKTAR2='{Request.MIKTAR2}', GUNCELLEME_YAPAN_KUL={Request.GUNCELLEME_KULLANICI_ID} WHERE ID={Request.ID}";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>("Stok başarıyla güncellendi.", "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+
+        }
+        [HttpGet("countings/{depo?}")]
+        public async Task<IResponse> GetStokCountings(string? depo=null)
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = $@"SP_COUNTINGS {(depo is null ? "" : $"'{depo}'")}";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+
+        }
+        [HttpPost("balanced")]
+        public async Task<IResponse> GetBalanced(StockBalanceModel Request)
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = $@"SP_STOCKWHCODEBALANCE '{Request.StokKodu}',{Request.DepoKodu}";
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        table.Load(sqlreader);
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+                return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+
+        }
+        [HttpPost("balanced/wh")]
+        public async Task<IResponse> GetBalancedWH(StockBalanceModel Request)
+        {
+            try
+            {
+                DataTable table = new DataTable();
+
+
+                string query = $@"SP_STOCKWHORDERDETAILS '{Request.StokKodu}',{Request.DepoKodu}";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
@@ -300,7 +422,7 @@ namespace SQL_API.Controllers
         {
             try
             {
-                string query = $@"UPDATE TBL_STOCKCOUNTING SET DEPO={Request.DEPO},GUNCELLEME_KULLANICI_ID={Request.GUNCELLEME_KULLANICI_ID},SAYIM_ADI='{Request.SAYIM_ADI}' WHERE SAYIM_ID={Request.SAYIM_ID}";
+                string query = $@"UPDATE TBL_STOCKCOUNTING SET DEPO={Request.DEPO},GUNCELLEME_KULLANICI_ID={Request.GUNCELLEME_KULLANICI_ID},SAYIM_ADI='{Request.SAYIM_ADI}',TOLERANS='{Request.TOLERANS}' WHERE SAYIM_ID={Request.SAYIM_ID}";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
@@ -329,7 +451,7 @@ namespace SQL_API.Controllers
         {
             try
             {
-                string query = $@"INSERT TBL_STOCKCOUNTING(SAYIM_ADI,KAYIT_KULLANICI_ID,DEPO) VALUES('{Request.SAYIM_ADI}','{Request.KAYIT_KULLANICI_ID}','{Request.DEPO}')";
+                string query = $@"INSERT TBL_STOCKCOUNTING(SAYIM_ADI,KAYIT_KULLANICI_ID,DEPO,TOLERANS) VALUES('{Request.SAYIM_ADI}','{Request.KAYIT_KULLANICI_ID}','{Request.DEPO}','{Request.TOLERANS}')";
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;
@@ -359,6 +481,35 @@ namespace SQL_API.Controllers
             try
             {
                 string query = $"DELETE FROM TBL_STOCKCOUNTING WHERE SAYIM_ID="+ id;
+
+                string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+                SqlDataReader sqlreader;
+                await using (SqlConnection mycon = new SqlConnection(sqldataSource))
+                {
+                    mycon.Open();
+                    using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                    {
+                        sqlreader = await myCommand.ExecuteReaderAsync();
+                        sqlreader.Close();
+                        mycon.Close();
+                    }
+                }
+
+                return new SuccessResponse<string>("Başarılı.", "Başarıyla silindi.");
+            }
+            catch (Exception Ex)
+            {
+                string Detail = $"{Ex.Message} {(Ex.InnerException is not null ? $"(Detail: {Ex.InnerException.Message})" : "")}";
+                return new ErrorResponse(Detail);
+            }
+
+        }
+        [HttpPost("delete/countingdetay/{id}")]
+        public async Task<IResponse> DeleteDetayCounting(int id)
+        {
+            try
+            {
+                string query = $"DELETE FROM TBL_COUNTINGS WHERE ID=" + id;
 
                 string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
                 SqlDataReader sqlreader;

@@ -352,6 +352,31 @@ namespace SQL_API.Controllers
 
             return JsonConvert.SerializeObject(table);
         }
+        [HttpGet("All")]
+        public string GetAllUsers()
+        {
+
+            DataTable table = new DataTable();
+
+
+            string query = @"SP_GETALLACTIVEUSERS";
+
+            string sqldataSource = _configuration.GetConnectionString("NOVA_EFECE")!;
+            SqlDataReader sqlreader;
+            using (SqlConnection mycon = new SqlConnection(sqldataSource))
+            {
+                mycon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, mycon))
+                {
+                    sqlreader = myCommand.ExecuteReader();
+                    table.Load(sqlreader);
+                    sqlreader.Close();
+                    mycon.Close();
+                }
+            }
+
+            return JsonConvert.SerializeObject(table);
+        }
         [HttpGet("Personal/{PersonaID}")]
         public string GetPersonal(int PersonaID)
         {
@@ -639,6 +664,19 @@ namespace SQL_API.Controllers
                      p.DAHILI_IPEI_NO = personel.DAHILI_IPEI_NO;
                      p.ACIL_DURUM_KISI_YAKINLIK = personel.ACIL_DURUM_KISI_YAKINLIK;
                      p.ACIL_DURUM_KISI2_YAKINLIK = personel.ACIL_DURUM_KISI2_YAKINLIK;
+                     p.COCUK1 = personel.COCUK1==""?null:personel.COCUK1;
+                     p.COCUK2 = personel.COCUK2;
+                     p.COCUK3 = personel.COCUK3;
+                     p.COCUK4 = personel.COCUK4;
+                     p.COCUK5 = personel.COCUK5;
+                     p.COCUK1_DOGUM = personel.COCUK1_DOGUM != null ? ((DateTime)personel.COCUK1_DOGUM).AddHours(3) : personel.COCUK1_DOGUM;
+                     p.COCUK2_DOGUM = personel.COCUK2_DOGUM != null ? ((DateTime)personel.COCUK2_DOGUM).AddHours(3) : personel.COCUK2_DOGUM;
+                     p.COCUK3_DOGUM = personel.COCUK3_DOGUM != null ? ((DateTime)personel.COCUK3_DOGUM).AddHours(3) : personel.COCUK3_DOGUM;
+                     p.COCUK4_DOGUM = personel.COCUK4_DOGUM != null ? ((DateTime)personel.COCUK4_DOGUM).AddHours(3) : personel.COCUK4_DOGUM;
+                     p.COCUK5_DOGUM = personel.COCUK5_DOGUM != null ? ((DateTime)personel.COCUK5_DOGUM).AddHours(3) : personel.COCUK5_DOGUM;
+                p.SAGLIK_TARAMASI_TARIH = personel.SAGLIK_TARAMASI_TARIH != null ? ((DateTime)personel.SAGLIK_TARAMASI_TARIH).AddHours(3) : personel.SAGLIK_TARAMASI_TARIH;
+                p.TETANOZ_ASI_TARIH = personel.TETANOZ_ASI_TARIH != null ? ((DateTime)personel.TETANOZ_ASI_TARIH).AddHours(3) : personel.TETANOZ_ASI_TARIH;
+                p.ALERJI = personel.ALERJI;
                 _Context.Update(p);
                 var user = _Context.USERS.FirstOrDefault(x => x.USER_ID == p.USER_ID);
                 user!.USER_FIRSTNAME = personel.USER_FIRSTNAME;

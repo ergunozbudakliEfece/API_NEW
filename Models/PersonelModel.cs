@@ -74,6 +74,25 @@ namespace SQL_API.Models
         public string? DAHILI_IPEI_NO { get; set; }
         public string? ACIL_DURUM_KISI_YAKINLIK { get; set; }
         public string? ACIL_DURUM_KISI2_YAKINLIK { get; set; }
-
+        public string? COCUK1 { get; set; }
+        public string? COCUK2 { get; set; }
+        public string? COCUK3 { get; set; }
+        public string? COCUK4 { get; set; }
+        public string? COCUK5 { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? COCUK1_DOGUM { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? COCUK2_DOGUM { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? COCUK3_DOGUM { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? COCUK4_DOGUM { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? COCUK5_DOGUM { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? SAGLIK_TARAMASI_TARIH { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? TETANOZ_ASI_TARIH { get; set; }
+        public string? ALERJI { get; set; }
     }
 }

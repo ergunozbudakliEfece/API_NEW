@@ -7,5 +7,6 @@
         public int? KAYIT_KULLANICI_ID { get; set; }
         public int? GUNCELLEME_KULLANICI_ID { get; set; }
         public int? DEPO { get; set; }
+        public string? TOLERANS { get; set; }
     }
 }

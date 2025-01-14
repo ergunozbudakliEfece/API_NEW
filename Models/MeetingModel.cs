@@ -23,5 +23,6 @@ namespace SQL_API.Models
         public string? SUREC { get; set; }
         public int? ILETISIM_KANALI { get; set; }
         public string? YURTICIDISI { get; set; }
+        public string? GORUSULEN_KISI { get; set; }
     }
 }
