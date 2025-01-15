@@ -12,6 +12,8 @@ namespace SQL_API.Context
         public DbSet<MeetingModel> TBL_CUSTOMERCALENDAR { get; set; }
         public DbSet<ShippingForm> TBL_SHIPPINGFORMS { get; set; }
         public DbSet<AttendanceModel> TBL_ATTENDANCE { get; set; }
+        public DbSet<ShiftModel> TBL_SHIFTS { get; set; }
+        public DbSet<ShiftDetailModel> TBL_SHIFTDETAILS { get; set; }
         public DbSet<SettedPriceModel> SETTED { get; set; }
         public NOVAEFECEDbContext(DbContextOptions<NOVAEFECEDbContext> options) : base(options) { }
 

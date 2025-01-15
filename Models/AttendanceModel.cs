@@ -18,5 +18,10 @@ namespace SQL_API.Models
 
         [Column(TypeName = "DateTime")]
         public DateTime? INS_DATE { get; set; }
+
+        public int? UPD_USER_ID { get; set; }
+        [Column(TypeName = "DateTime")]
+        public DateTime? UPD_DATE { get; set; }
+
     }
 }

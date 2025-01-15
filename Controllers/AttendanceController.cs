@@ -127,6 +127,8 @@ namespace SQL_API.Controllers
                 if (Attendance is not null)
                 {
                     Attendance.DATE = UpdateRequest.DATE;
+                    Attendance.UPD_USER_ID = UpdateRequest.UPD_USER_ID;
+                    Attendance.UPD_DATE = UpdateRequest.UPD_DATE;
 
                     await _context.SaveChangesAsync();
                 }
@@ -167,7 +169,6 @@ namespace SQL_API.Controllers
                 return new ErrorResponse(Ex);
             }
         }
-
 
         [HttpDelete("DeleteRange")]
         public async Task<IResponse> DeleteRange([FromBody] List<int> IDList)
@@ -220,6 +221,54 @@ namespace SQL_API.Controllers
                     }
                 }
                 return new SuccessResponse<string>(JsonConvert.SerializeObject(table), "Başarılı");
+            }
+            catch (Exception Ex)
+            {
+                return new ErrorResponse(Ex);
+            }
+        }
+
+        [HttpGet("Schedule/{year}/{userId}")]
+        public async Task<IResponse> GetYearlyData(int year, int userId) 
+        {
+            try
+            {
+                List<AttendanceModel> attendances = await _context.TBL_ATTENDANCE.Where(a => a.USER_ID == userId && a.DATE.Year == year).ToListAsync();
+
+                return new SuccessResponse<List<AttendanceModel>>(attendances, "Success.");
+            }
+            catch (Exception Ex) 
+            {
+                string exceptionMessage = $"{Ex.Message}{(Ex.InnerException is not null ? $" (Detail: {Ex.InnerException.Message})" : "")}";
+
+                return new ErrorResponse(exceptionMessage);
+            }
+        }
+
+        [HttpPut("Schedule/Update")]
+        public async Task<IResponse> YearlyUpdate([FromBody] List<AttendanceUpdateRequest> UpdateRequest)
+        {
+            try
+            {
+
+                foreach (AttendanceUpdateRequest request in UpdateRequest)
+                {
+                    AttendanceModel? Attendance = await _context.TBL_ATTENDANCE.Where(x => x.INCKEY == request.INCKEY).FirstOrDefaultAsync();
+
+                    if (Attendance is not null)
+                    {
+                        if(Attendance.DATE != request.DATE) 
+                        {
+                            Attendance.DATE = request.DATE;
+                            Attendance.UPD_USER_ID = request.UPD_USER_ID;
+                            Attendance.UPD_DATE = request.UPD_DATE;
+                        }
+
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
+                return new SuccessResponse<string>("", "");
             }
             catch (Exception Ex)
             {
